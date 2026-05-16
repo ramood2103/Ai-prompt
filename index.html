@@ -5,608 +5,716 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>PromptVerse</title>
 <meta name="theme-color" content="#0a0a0f">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0f;--bg2:#10101a;--bg3:#161625;--bg4:#1c1c32;--accent:#06d6a0;--accent2:#7c3aed;--accent3:#f59e0b;--text:#ededf5;--muted:#6e6e8a;--border:#262642;--danger:#f43f5e}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{overflow:hidden;height:100%;font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text)}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
-@media(min-width:481px){.app{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
-.hdr{background:rgba(10,10,15,.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(38,38,66,.5);padding:10px 14px;flex-shrink:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
-.hdr-logo{display:flex;align-items:center;gap:10px}
-.hdr-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-size:14px;flex-shrink:0}
-.hdr h1{font-size:16px;font-weight:700}.hdr p{font-size:10px;color:var(--muted)}
-.hdr-btn{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:13px;transition:all .2s}
-.hdr-btn:hover{border-color:var(--accent);color:var(--accent)}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
-.bnav{background:rgba(10,10,15,.92);backdrop-filter:blur(20px);border-top:1px solid rgba(38,38,66,.5);display:flex;justify-content:space-around;padding:6px 0 max(env(safe-area-inset-bottom),8px);flex-shrink:0;z-index:50}
-.bnav-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 14px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600;transition:all .2s;position:relative}
-.bnav-item i{font-size:18px;transition:transform .2s}.bnav-item.act{color:var(--accent)}.bnav-item.act i{transform:scale(1.15)}
-.bnav-dot{position:absolute;top:3px;right:10px;width:5px;height:5px;background:var(--accent3);border-radius:50%}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative}
-.card:hover{border-color:rgba(6,214,160,.3);transform:translateY(-1px)}.card:active{transform:scale(.97)}
-.card-img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--bg3)}
-.card-ov{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.88));padding:30px 8px 8px}
-.card-ov p{font-size:10px;color:rgba(255,255,255,.88);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.card-foot{padding:8px 10px;display:flex;align-items:center;justify-content:space-between}
-.card-src{font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 7px;border-radius:5px}
-.card-save{background:none;border:none;cursor:pointer;font-size:13px;padding:2px;transition:color .2s}
-.card-save.saved{color:var(--accent3)!important}
+:root{--bg:#0a0a0f;--bg2:#10101a;--bg3:#161625;--accent:#06d6a0;--accent2:#7c3aed;--accent3:#f59e0b;--text:#ededf5;--muted:#6e6e8a;--border:#262642;--danger:#f43f5e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);height:100dvh;overflow:hidden}
+#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative}
+@media(min-width:481px){#app{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
+.topbar{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(38,38,66,.5);flex-shrink:0;z-index:10}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:13px}
+.topbar h1{font-size:15px;font-weight:700}.topbar .sub{font-size:10px;color:var(--muted)}
+.ibtn{width:32px;height:32px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+.ibtn:hover{border-color:var(--accent);color:var(--accent)}
+#main{flex:1;overflow-y:auto;overflow-x:hidden}
+.nav{display:flex;justify-content:space-around;padding:6px 0 max(env(safe-area-inset-bottom),8px);background:rgba(10,10,15,.92);backdrop-filter:blur(16px);border-top:1px solid rgba(38,38,66,.5);flex-shrink:0}
+.nav-i{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 14px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600;transition:.2s}
+.nav-i.on{color:var(--accent)}.nav-i i{font-size:18px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;position:relative}
+.card:active{transform:scale(.97)}.card img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--bg3)}
+.card .ov{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:24px 8px 8px}
+.card .ov p{font-size:10px;color:rgba(255,255,255,.9);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card .ft{padding:7px 10px;display:flex;align-items:center;justify-content:space-between}
+.card .src{font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 7px;border-radius:5px}
+.sbtn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);padding:2px}
+.sbtn.on{color:var(--accent3)}
+.chip{display:inline-flex;align-items:center;gap:3px;padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.2s;border:1px solid transparent}
+.chip.on{background:rgba(6,214,160,.12);color:var(--accent);border-color:rgba(6,214,160,.35)}
 .chips{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
-.chip{display:inline-flex;align-items:center;gap:3px;padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;background:var(--bg3);color:var(--muted);border:1px solid transparent;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .2s}
-.chip:hover{border-color:var(--border);color:var(--text)}.chip.act{background:rgba(6,214,160,.12);color:var(--accent);border-color:rgba(6,214,160,.35)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:11px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
-.btn:active{transform:scale(.95)}.btn-p{background:var(--accent);color:var(--bg)}.btn-s{background:var(--bg3);color:var(--text);border:1px solid var(--border)}.btn-sm{padding:5px 10px;font-size:10px;border-radius:8px}
-.search-box{position:relative}.search-box input{width:100%;padding:11px 14px 11px 40px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s}.search-box input:focus{border-color:var(--accent)}.search-box input::placeholder{color:var(--muted)}
-.search-box .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
-.modal{position:fixed;inset:0;z-index:100;background:var(--bg);transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1);max-width:480px;margin:0 auto;overflow-y:auto}
-.modal.open{transform:translateY(0)}
-.modal-hdr{position:sticky;top:0;z-index:10;background:rgba(10,10,15,.9);backdrop-filter:blur(16px);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
-.modal-img{width:100%;max-height:380px;object-fit:contain;background:var(--bg2)}
-.prompt-box{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px;font-size:12px;line-height:1.7;color:#c0c0d8;word-break:break-word}
-.param-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--muted)}
-.toast-wrap{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:200;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:6px}
-.toast{background:var(--bg4);color:var(--text);padding:8px 18px;border-radius:10px;font-size:12px;font-weight:500;border:1px solid var(--border);box-shadow:0 8px 28px rgba(0,0,0,.5);animation:ti .3s ease,to .3s ease 2s forwards;display:flex;align-items:center;gap:7px}
-.src-card{padding:14px;border-radius:12px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.src-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.src-count{font-size:20px;font-weight:800;color:var(--accent)}
-.skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:10px}
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;color:var(--muted)}.empty i{font-size:42px;margin-bottom:14px;opacity:.25}
-.status-bar{display:flex;gap:6px;padding:10px 14px;flex-wrap:wrap}
-.status-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
-.status-pill.ok{border-color:rgba(6,214,160,.3);color:var(--accent)}.status-pill.err{border-color:rgba(244,63,94,.3);color:var(--danger)}.status-pill.load{border-color:rgba(245,158,11,.3);color:var(--accent3)}
-.status-dot{width:5px;height:5px;border-radius:50%}.status-pill.ok .status-dot{background:var(--accent)}.status-pill.err .status-dot{background:var(--danger)}.status-pill.load .status-dot{background:var(--accent3);animation:pulse 1s infinite}
-.log-line{font-size:10px;padding:4px 0;border-bottom:1px solid rgba(38,38,66,.3);line-height:1.4}.log-line .lok{color:var(--accent)}.log-line .lerr{color:var(--danger)}.log-line .linf{color:var(--accent3)}.log-line .ldim{color:var(--muted)}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-@keyframes ti{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes to{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:11px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:.2s}
+.btn:active{transform:scale(.95)}
+.btn1{background:var(--accent);color:var(--bg)}.btn2{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.overlay{position:fixed;inset:0;z-index:100;background:var(--bg);transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1);max-width:480px;margin:0 auto;overflow-y:auto}
+.overlay.show{transform:translateY(0)}
+.ohdr{position:sticky;top:0;z-index:10;background:rgba(10,10,15,.9);backdrop-filter:blur(16px);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.pbox{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px;font-size:12px;line-height:1.7;color:#c0c0d8;word-break:break-word}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--muted)}
+.toast-c{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:200;pointer-events:none}
+.toast{background:var(--bg3);color:var(--text);padding:8px 16px;border-radius:10px;font-size:12px;border:1px solid var(--border);box-shadow:0 6px 24px rgba(0,0,0,.5);animation:ti .3s ease;opacity:1;transition:opacity .3s}
+@keyframes ti{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.anim-up{animation:fadeUp .4s ease both}
-.hero-bg{background:linear-gradient(135deg,rgba(6,214,160,.06),rgba(124,58,237,.06),rgba(6,214,160,.03));background-size:300% 300%;animation:bgShift 8s ease infinite}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.anim{animation:fadeUp .35s ease both}
+.hero{background:linear-gradient(135deg,rgba(6,214,160,.06),rgba(124,58,237,.06));background-size:300% 300%;animation:bgShift 8s ease infinite}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;font-size:9px;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.pill.ok{border-color:rgba(6,214,160,.3);color:var(--accent)}.pill.err{border-color:rgba(244,63,94,.3);color:var(--danger)}.pill.wait{border-color:rgba(245,158,11,.3);color:var(--accent3)}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.sbar{display:flex;gap:5px;padding:10px 14px;flex-wrap:wrap}
+.log{font-size:10px;padding:3px 0;border-bottom:1px solid rgba(38,38,66,.3);line-height:1.4}
+.log .g{color:var(--accent)}.log .r{color:var(--danger)}.log .y{color:var(--accent3)}.log .d{color:var(--muted)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;color:var(--muted)}.empty i{font-size:40px;margin-bottom:12px;opacity:.2}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important;transition-duration:0s!important}}
 </style>
 </head>
 <body>
-<div class="app">
-<header class="hdr"><div class="hdr-logo"><div class="hdr-icon"><i class="fas fa-wand-magic-sparkles"></i></div><div><h1>PromptVerse</h1><p id="hdrSub">Loading...</p></div></div><div style="display:flex;gap:6px"><button class="hdr-btn" onclick="showSources()" aria-label="Sources"><i class="fas fa-database"></i></button><button class="hdr-btn" onclick="refreshAll()" aria-label="Refresh"><i class="fas fa-arrows-rotate" id="refreshIcon"></i></button></div></header>
-<main class="content" id="mc"></main>
-<nav class="bnav"><div class="bnav-item act" data-v="home" onclick="go('home')"><i class="fas fa-house"></i><span>Home</span></div><div class="bnav-item" data-v="explore" onclick="go('explore')"><i class="fas fa-compass"></i><span>Explore</span></div><div class="bnav-item" data-v="search" onclick="go('search')"><i class="fas fa-magnifying-glass"></i><span>Search</span></div><div class="bnav-item" data-v="saved" onclick="go('saved')"><i class="fas fa-bookmark"></i><span>Saved</span><div class="bnav-dot" id="saveDot" style="display:none"></div></div></nav>
-<div class="modal" id="detailModal"><div id="detailBody"></div></div>
-<div class="modal" id="srcModal" style="z-index:110"><div id="srcBody"></div></div>
-<div class="toast-wrap" id="toasts"></div>
+<div id="app">
+<div class="topbar">
+  <div class="topbar-left"><div class="logo"><i class="fas fa-wand-magic-sparkles"></i></div><div><h1>PromptVerse</h1><div class="sub" id="hsub">Loading...</div></div></div>
+  <div style="display:flex;gap:6px"><button class="ibtn" onclick="showSrc()"><i class="fas fa-database"></i></button><button class="ibtn" onclick="doRefresh()"><i class="fas fa-arrows-rotate" id="ricon"></i></button></div>
 </div>
+<div id="main"></div>
+<div class="nav">
+  <div class="nav-i on" data-v="home" onclick="nav('home')"><i class="fas fa-house"></i>Home</div>
+  <div class="nav-i" data-v="explore" onclick="nav('explore')"><i class="fas fa-compass"></i>Explore</div>
+  <div class="nav-i" data-v="search" onclick="nav('search')"><i class="fas fa-magnifying-glass"></i>Search</div>
+  <div class="nav-i" data-v="saved" onclick="nav('saved')"><i class="fas fa-bookmark"></i>Saved</div>
+</div>
+<div class="overlay" id="detOv"></div>
+<div class="overlay" id="srcOv" style="z-index:110"></div>
+<div class="toast-c" id="toastc"></div>
+</div>
+
 <script>
-// ============ STATE ============
-var S={view:'home',src:'all',cat:'all',prompts:[],saved:JSON.parse(localStorage.getItem('pv_s')||'[]'),q:'',loading:false,srcStatus:{},srcCounts:{},imgErr:{},logs:[]};
-var CATS=[{id:'all',n:'All',i:'fa-layer-group'},{id:'landscape',n:'Landscape',i:'fa-mountain-sun'},{id:'portrait',n:'Portrait',i:'fa-user'},{id:'fantasy',n:'Fantasy',i:'fa-hat-wizard'},{id:'anime',n:'Anime',i:'fa-star'},{id:'scifi',n:'Sci-Fi',i:'fa-rocket'},{id:'photo',n:'Photo',i:'fa-camera'},{id:'abstract',n:'Abstract',i:'fa-shapes'},{id:'3d',n:'3D',i:'fa-cube'},{id:'concept',n:'Concept',i:'fa-palette'},{id:'character',n:'Character',i:'fa-person'},{id:'minimal',n:'Minimal',i:'fa-minus'}];
+// ===== APP STATE =====
+var P = []; // all prompts
+var V = 'home'; // current view
+var SRC = 'all'; // source filter
+var CAT = 'all'; // category filter
+var Q = ''; // search query
+var SVD = JSON.parse(localStorage.getItem('pvs') || '[]'); // saved
+var ST = {}; // source status {civitai:'ok'|'err'|'wait',...}
+var SC = {}; // source counts
+var LG = []; // logs
+var IE = {}; // image errors
 
-// ============ LOGGING ============
-function addLog(msg,type){
-    type=type||'inf';
-    S.logs.unshift({msg:msg,type:type,time:new Date().toLocaleTimeString()});
-    if(S.logs.length>50)S.logs.length=50;
+function log(m, t) { LG.unshift({ m: m, t: t || 'y', ts: new Date().toLocaleTimeString() }); if (LG.length > 40) LG.length = 40; }
+
+// ===== 60 BUILT-IN PROMPTS =====
+var BI = [
+{p:'Serene Japanese garden at twilight, stone lanterns glowing warmly, cherry blossom petals drifting across a koi pond, mist rising from the water, ultra detailed, cinematic lighting, 8k',n:'blurry, low quality',c:'landscape',m:'SDXL',t:['japanese','garden']},
+{p:'Cyberpunk street vendor selling neon noodles, rain-slicked pavement reflecting holographic signs, steam rising from food stall, crowded alleyway, blade runner aesthetic, volumetric lighting',n:'ugly, deformed, blurry',c:'scifi',m:'SDXL',t:['cyberpunk','neon']},
+{p:'Ethereal forest spirit, translucent glowing skin, hair made of moonlight and fireflies, crown of crystal antlers, dark enchanted forest background, fantasy art, detailed face, masterpiece',n:'ugly, deformed face',c:'fantasy',m:'SDXL',t:['spirit','forest']},
+{p:'Macro photography of morning dewdrops on spider web, golden hour sunlight refracting through each drop creating tiny rainbows, bokeh background of wildflower meadow, hyperrealistic, 8k',n:'blurry, grainy',c:'photo',m:'SDXL',t:['macro','dew']},
+{p:'Massive floating crystal city above clouds, bridges of pure light connecting towers, airships docking at crystal platforms, sunset painting the sky amber and violet, epic scale, concept art',n:'low quality, ugly',c:'fantasy',m:'SDXL',t:['crystal','city']},
+{p:'Steampunk clockwork owl perched on brass gear, intricate mechanical parts visible through glass panels, copper and gold tones, dark moody background, detailed mechanical illustration',n:'modern, plastic',c:'3d',m:'SDXL',t:['steampunk','mechanical']},
+{p:'Underwater ancient temple ruins overgrown with bioluminescent coral, schools of tropical fish swimming through marble columns, sunbeams filtering through clear water, mystical atmosphere, 8k',n:'surface, dry, blurry',c:'landscape',m:'SDXL',t:['underwater','temple']},
+{p:'Minimalist architectural photography, concrete staircase with dramatic shadows, geometric patterns, black and white with one red accent element, clean composition, cinematic perspective',n:'cluttered, colorful',c:'minimal',m:'SDXL',t:['architecture','minimalist']},
+{p:'Anime girl warrior on cliff edge, flowing white hair in wind, ornate samurai armor with cherry blossom engravings, katana drawn, dramatic sunset, studio ghibli inspired, cel shaded, masterpiece',n:'realistic, photographic',c:'anime',m:'Anything V5',t:['warrior','sunset']},
+{p:'Cozy cabin interior during snowstorm, roaring fireplace casting warm orange light, stacks of old books, steaming cocoa on wooden table, cat sleeping on rug, hygge aesthetic, warm tones',n:'cold colors, modern',c:'photo',m:'SDXL',t:['cabin','cozy']},
+{p:'Abstract fluid art, molten gold and deep ocean blue swirling together, marble texture, high contrast, organic flowing shapes, luxurious feel, 4k texture, metallic sheen',n:'figurative, messy',c:'abstract',m:'SDXL',t:['fluid','gold']},
+{p:'Astronaut floating in deep space surrounded by nebula, helmet visor reflecting distant galaxies, tether trailing into darkness, photorealistic space suit, cosmic color palette, cinematic, 8k',n:'cartoon, low detail',c:'scifi',m:'SDXL',t:['astronaut','space']},
+{p:'Dragon made entirely of crystalline ice, perched atop frozen mountain peak, aurora borealis in sky, ice crystals refracting rainbow light, majestic and powerful, fantasy illustration, ultra detailed',n:'fire, warm colors',c:'fantasy',m:'SDXL',t:['dragon','ice']},
+{p:'Vintage vinyl record store interior, warm amber lighting, floor-to-ceiling record bins, analog equipment, 1970s aesthetic, film grain, nostalgic mood, documentary photography',n:'modern, digital',c:'photo',m:'SDXL',t:['vintage','records']},
+{p:'Biomechanical humanoid, half organic half machine, exposed circuitry merging with muscle fiber, glowing neural pathways, dark laboratory, HR Giger inspired, intricate detail',n:'cute, bright, cartoon',c:'scifi',m:'SDXL',t:['biomechanical','giger']},
+{p:'Enchanted library with books flying through air, magical golden sparkles, spiral staircases reaching into clouds, ancient tome with glowing runes, warm candlelight, fantasy concept art',n:'modern, empty, dark',c:'fantasy',m:'SDXL',t:['library','magic']},
+{p:'Product photography of luxury perfume bottle, dramatic side lighting, liquid amber inside crystal bottle, mist and golden particles, dark reflective surface, commercial quality, ultra sharp',n:'amateur, blurry',c:'photo',m:'SDXL',t:['product','luxury']},
+{p:'Post-apocalyptic greenhouse, nature reclaiming glass dome, vines through steel frames, flowers from rusted cars, sunlight through cracked panels, hopeful atmosphere, concept art',n:'pristine, clean',c:'concept',m:'SDXL',t:['apocalyptic','nature']},
+{p:'Traditional Chinese ink wash painting of mountains from sea of clouds, lone fisherman in small boat, pine trees on cliffs, minimalist, wabi-sabi aesthetic, rice paper texture',n:'western, photorealistic',c:'minimal',m:'SDXL',t:['chinese','ink wash']},
+{p:'Alien botanical garden on distant planet, bioluminescent plants in impossible colors, floating spores, crystal formations like trees, two moons in violet sky, otherworldly paradise',n:'earth plants, human',c:'scifi',m:'SDXL',t:['alien','botanical']},
+{p:'Isometric voxel art of medieval fantasy village, tiny adventurers in town square, blacksmith forge with embers, windmill turning, flower gardens, cute and colorful, game asset',n:'realistic, dark',c:'3d',m:'SDXL',t:['voxel','medieval']},
+{p:'Baroque angel with six wings descending through golden clouds, dramatic chiaroscuro, oil painting inspired by Caravaggio, ornate halo, flowing robes, divine radiance, masterpiece',n:'modern, cartoon',c:'portrait',m:'SDXL',t:['angel','baroque']},
+{p:'Neon-drenched Tokyo alley at 3am, vending machine glow, rain creating rivers of color, silhouette of lone figure with umbrella, reflections everywhere, cyber-noir, film still',n:'daytime, sunny',c:'photo',m:'SDXL',t:['tokyo','neon']},
+{p:'Cute robot tending rooftop garden, watering can in mechanical hand, sunflowers in terra cotta pots, city skyline at sunset, warm and wholesome, pixar style 3D render, soft lighting',n:'scary, dark, realistic',c:'3d',m:'SDXL',t:['robot','garden']},
+{p:'Deep sea anglerfish with bioluminescent lure, abyssal plain with marine snow, otherworldly creatures in distance, dramatic underwater photography, abyssal zone darkness',n:'surface, bright',c:'photo',m:'SDXL',t:['deep sea','anglerfish']},
+{p:'Massive tree of life growing from tiny island in endless ocean, roots through crystal clear water, golden leaves falling into sea, birds circling canopy, surreal fantasy, epic scale',n:'realistic, small',c:'fantasy',m:'SDXL',t:['tree of life','surreal']},
+{p:'Samurai in field of tall grass, armor catching wind, dramatic backlit composition, red sun on horizon, long shadow, ink wash meets digital painting, powerful stance, lone warrior',n:'modern, casual',c:'portrait',m:'SDXL',t:['samurai','dramatic']},
+{p:'Retro-futuristic space station interior, 1960s vision of future, curved plastic furniture, bold primary colors, retro graphics on screens, optimism and wonder, vintage sci-fi',n:'modern, dark, gritty',c:'concept',m:'SDXL',t:['retro-futuristic','space']},
+{p:'Werewolf transformation in moonlit forest, halfway between man and beast, fur growing across skin, clothes tearing, howling at full moon, dramatic horror art, dark atmosphere',n:'cute, cartoon, bright',c:'character',m:'SDXL',t:['werewolf','horror']},
+{p:'Steampunk airship battle above Victorian London, brass and copper airships, smoke and steam clouds, big ben in background, dramatic sky, golden hour, cinematic wide shot',n:'modern, clean',c:'concept',m:'SDXL',t:['steampunk','airship']},
+{p:'Ethereal underwater wedding, bride in flowing gown floating weightless, bioluminescent jellyfish lanterns, coral arch with pearls, guests in mermaid attire, dreamlike atmosphere',n:'dry, ordinary, church',c:'fantasy',m:'SDXL',t:['underwater','wedding']},
+{p:'Cinematic wolf eyes in snowstorm, ice crystals on fur, amber eyes glowing with determination, shallow depth of field, national geographic quality, intense and powerful, sharp focus',n:'cartoon, anime, blurry',c:'photo',m:'SDXL',t:['wolf','snow']},
+{p:'Abandoned space station corridor with alien vegetation, emergency lights flickering, roots through metal walls, alien flowers from ceiling panels, eerie atmosphere, detailed',n:'clean, new, bright',c:'scifi',m:'SDXL',t:['abandoned','alien']},
+{p:'Miniature fairy village inside hollow tree trunk, glowing mushroom houses, acorn cap roofs, firefly street lamps, cobblestone seed paths, magical and whimsical, tilt-shift style',n:'large, human, modern',c:'fantasy',m:'SDXL',t:['fairy','miniature']},
+{p:'Cinematic car chase through neon tunnel, motion blur, sports car reflecting city lights, sparks from undercarriage, low angle, night time, fast and furious aesthetic, dramatic',n:'slow, parked, daytime',c:'photo',m:'SDXL',t:['car','neon']},
+{p:'Egyptian goddess Bastet from hieroglyphic wall carving, gold leaf peeling, sand swirling, cat-headed figure emerging, torchlight, temple interior, mystical atmosphere, detailed',n:'modern, cartoon',c:'fantasy',m:'SDXL',t:['egyptian','goddess']},
+{p:'Photorealistic glass bottle containing tiny storm, lightning inside, miniature clouds, rain against glass, wooden table, moody lighting, macro photography, surreal concept',n:'plastic, blurry, simple',c:'photo',m:'SDXL',t:['glass','storm']},
+{p:'Gothic vampire queen on obsidian throne, black lace gown, pale skin, crimson lips, cathedral window casting colored light, blood red wine glass, dark fantasy portrait',n:'bright, cheerful',c:'portrait',m:'SDXL',t:['vampire','gothic']},
+{p:'Cyberpunk geisha with LED kimono, holographic hair pins, neon reflections in rain, pink and cyan palette, traditional meets future, detailed face, neon district background',n:'historical, plain',c:'anime',m:'SDXL',t:['geisha','cyberpunk']},
+{p:'Surreal melting clock on barren tree branch, Dali inspired, dreamlike desert landscape, distorted perspective, warm golden tones, existential atmosphere, hyperrealistic, masterpiece',n:'normal clock, boring',c:'abstract',m:'SDXL',t:['surreal','dali']},
+{p:'Massive mecha robot rising from ocean, water cascading off armor, sunset backlighting, military fleet background, pilot in cockpit, neon engine vents, anime style, epic scale',n:'small, weak, blurry',c:'anime',m:'SDXL',t:['mecha','robot']},
+{p:'Ghost ship through aurora borealis, tattered sails glowing ethereal green, spectral crew at rigging, sea reflecting northern lights, hauntingly beautiful, maritime fantasy, cinematic',n:'modern ship, bright',c:'fantasy',m:'SDXL',t:['ghost ship','aurora']},
+{p:'Cat wizard studying spellbook in cozy tower, tiny spectacles, floating candles, bubbling potions, shelves of magical artifacts, warm firelight, whimsical illustration, detailed',n:'realistic, dark, scary',c:'character',m:'SDXL',t:['cat','wizard']},
+{p:'Futuristic Tokyo street level, holographic ads, autonomous vehicles, drone delivery, rain and neon, umbrellas, cyberpunk citizens, depth of field, cinematic, 8k resolution',n:'historical, empty, rural',c:'scifi',m:'SDXL',t:['tokyo','futuristic']},
+{p:'Crystal cave interior, enormous amethyst geode walls, underground lake reflecting purple light, stalactites, explorer with torch, warm contrast, fantasy landscape, photorealistic, 8k',n:'surface, ordinary',c:'landscape',m:'SDXL',t:['crystal','cave']},
+{p:'Witch cottage in autumn forest, thatched roof with herbs, broomstick by door, black cat on fence, smoke from crooked chimney, golden leaves falling, warm and inviting, storybook',n:'modern, dark, scary',c:'fantasy',m:'SDXL',t:['witch','autumn']},
+{p:'Valiant knight kneeling before sword in stone, cathedral light rays, stained glass colors, quest beginning, dramatic chiaroscuro, Arthurian legend, detailed armor and steel',n:'casual, modern',c:'character',m:'SDXL',t:['knight','sword']},
+{p:'Bustling alien marketplace, diverse species trading, bioluminescent stalls, floating platforms, exotic fruits, cantina scene, Star Wars meets Blade Runner, detailed crowd',n:'earth, human, empty',c:'scifi',m:'SDXL',t:['alien','marketplace']},
+{p:'Colossal ancient statue half-buried in desert, face and one hand visible, wind-carved, lone traveler on palm for scale, Lawrence of Arabia atmosphere, epic wide shot, detailed',n:'small, indoor, modern',c:'landscape',m:'SDXL',t:['statue','desert']},
+{p:'Fire dancer at night, flame trails creating patterns, sparks flying, dynamic movement, tribal ceremony, muscle definition, dramatic lighting, perfect timing, sports photography',n:'static, day, indoor',c:'photo',m:'SDXL',t:['fire','dancer']},
+{p:'Clockwork heart of brass and crystal, gears through transparent casing, blue energy through glass tubes, ornate victorian mechanism, macro 3D render, detailed mechanical',n:'organic, simple, modern',c:'3d',m:'SDXL',t:['clockwork','steampunk']},
+{p:'Space whale through nebula, barnacles that are tiny planets, cosmic dust trail, star formation in wake, enormous scale, blue and purple, spiritual sci-fi, majestic and peaceful',n:'ocean, earth, small',c:'scifi',m:'SDXL',t:['whale','galaxy']},
+{p:'Rain-soaked neon alley food stall, steam mixing with rain, cook making ramen, warm light vs cold blue rain, intimate urban moment, street photography, cinematic composition',n:'sunny, clean, empty',c:'photo',m:'SDXL',t:['neon','rain']},
+{p:'Ice queen in frozen throne room, crystalline frost dress, breath as ice crystals, frozen guards, cold blue with warm candle accents, dark fantasy portrait, detailed, masterpiece',n:'warm, summer, casual',c:'portrait',m:'SDXL',t:['ice queen','frozen']},
+{p:'Magical apothecary shop, glowing potion shelves, dried herbs on ceiling, ancient scales, cat on grimoire, warm firelight, wizarding world aesthetic, detailed interior, cozy',n:'modern pharmacy, bright',c:'fantasy',m:'SDXL',t:['apothecary','potions']},
+{p:'Fox spirit kitsune in cherry blossom storm, nine tails flowing, porcelain mask, floating lantern, Japanese mythology, moonlit night, digital painting, ethereal and mysterious',n:'western, realistic, day',c:'anime',m:'SDXL',t:['kitsune','mythology']},
+{p:'Bonsai tree that is tiny living planet, miniature mountains oceans clouds, tiny civilizations on branches, cosmic roots into starfield, meditation garden, surreal concept art',n:'normal bonsai, boring',c:'concept',m:'SDXL',t:['bonsai','planet']},
+{p:'Galactic whale breaching through nebula surface, cosmic ocean of stars, spiral galaxy from splash, space dolphins, blue and gold cosmic palette, spiritual sci-fi, majestic',n:'earth ocean, realistic',c:'scifi',m:'SDXL',t:['whale','galaxy']},
+{p:'Autumn forest path with floating lanterns, golden red leaves suspended mid-fall, misty atmosphere, wooden bridge over stream, warm amber light, peaceful nostalgic, 8k detailed',n:'spring, winter, urban',c:'landscape',m:'SDXL',t:['autumn','lanterns']}
+];
+
+// Convert built-in to full format
+var builtIn = BI.map(function(b, i) {
+    return { id: 'b' + i, prompt: b.p, neg: b.n || '', cat: b.c, model: b.m || 'SDXL', steps: 0, cfg: 0, sampler: '', seed: 0, tags: b.t || [], likes: Math.floor(Math.random() * 300) + 10, src: 'Built-in', img: '' };
+});
+
+// ===== CATS =====
+var CATS = [{id:'all',n:'All'},{id:'landscape',n:'Landscape'},{id:'portrait',n:'Portrait'},{id:'fantasy',n:'Fantasy'},{id:'anime',n:'Anime'},{id:'scifi',n:'Sci-Fi'},{id:'photo',n:'Photo'},{id:'abstract',n:'Abstract'},{id:'3d',n:'3D'},{id:'concept',n:'Concept'},{id:'character',n:'Character'},{id:'minimal',n:'Minimal'}];
+
+// ===== ESCAPE HTML =====
+function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ===== TOAST =====
+function toast(msg) {
+    var c = document.getElementById('toastc');
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 2000);
 }
 
-// ============ SMART FETCH WITH CORS PROXY RACING ============
-function pFetch(url,timeout){
-    timeout=timeout||15000;
-    return new Promise(function(resolve,reject){
-        var settled=false;
-        var failCount=0;
-        var totalAttempts=4;
-        var urls=[
-            url,
-            'https://corsproxy.io/?'+encodeURIComponent(url),
-            'https://api.allorigins.win/raw?url='+encodeURIComponent(url),
-            'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url)
-        ];
-        var delays=[0,600,2000,4000];
+// ===== SAVE/COPY =====
+function isSaved(id) { return SVD.some(function(x) { return x.id === id; }); }
+function sv(id) {
+    var p = findP(id); if (!p) return;
+    if (isSaved(id)) { SVD = SVD.filter(function(x) { return x.id !== id; }); toast('Removed'); }
+    else { SVD.unshift(JSON.parse(JSON.stringify(p))); toast('Saved!'); }
+    try { localStorage.setItem('pvs', JSON.stringify(SVD)); } catch(e) {}
+    draw();
+}
+function cp(text) {
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { toast('Copied!'); }); }
+    else { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); toast('Copied!'); }
+}
+function findP(id) { return P.find(function(x) { return x.id === id; }) || SVD.find(function(x) { return x.id === id; }); }
 
-        function tryUrl(idx){
-            if(settled)return;
-            if(idx>=urls.length)return;
-            var fetchUrl=urls[idx];
-            var ctrl=new AbortController();
-            var timer=setTimeout(function(){try{ctrl.abort()}catch(e){}},timeout);
-
-            fetch(fetchUrl,{signal:ctrl.signal,mode:'cors'}).then(function(r){
-                clearTimeout(timer);
-                if(!r.ok)throw new Error('HTTP '+r.status);
-                return r.text();
-            }).then(function(txt){
-                if(settled)return;
-                settled=true;
-                try{resolve(JSON.parse(txt))}catch(e){resolve(txt)}
-            }).catch(function(err){
-                clearTimeout(timer);
-                if(settled)return;
-                failCount++;
-                if(failCount>=totalAttempts){
-                    settled=true;
-                    reject(new Error('All '+totalAttempts+' attempts failed for '+url));
-                }
-            });
-        }
-
-        // Stagger the attempts
-        for(var i=0;i<urls.length;i++){
-            (function(idx){
-                setTimeout(function(){tryUrl(idx)},delays[idx]);
-            })(i);
-        }
-    });
+// ===== CATEGORY GUESS =====
+function gcat(p, t) {
+    var a = (p + ' ' + (t || []).join(' ')).toLowerCase();
+    if (/anime|manga|waifu|ghibli/.test(a)) return 'anime';
+    if (/portrait|face|girl|boy|woman|man/.test(a) && !/landscape|city|forest|ocean/.test(a)) return 'portrait';
+    if (/landscape|mountain|forest|ocean|sunset|lake/.test(a)) return 'landscape';
+    if (/fantasy|dragon|magic|wizard|elf|fairy|castle/.test(a)) return 'fantasy';
+    if (/sci.?fi|cyberpunk|space|robot|mech|alien/.test(a)) return 'scifi';
+    if (/photo|camera|bokeh|film|dslr/.test(a)) return 'photo';
+    if (/abstract|fluid|fractal|geometric|surreal/.test(a)) return 'abstract';
+    if (/3d|render|blender|octane|unreal|voxel/.test(a)) return '3d';
+    if (/concept|design|environment|vehicle/.test(a)) return 'concept';
+    if (/character|warrior|knight|samurai|witch/.test(a)) return 'character';
+    if (/minimal|minimalist|clean|simple/.test(a)) return 'minimal';
+    return 'concept';
 }
 
-// ============ CATEGORY GUESSER ============
-function guessCat(p,t){
-    var a=(p+' '+(t||[]).join(' ')).toLowerCase();
-    if(/anime|manga|waifu|ghibli|shinkai|cel.shad/.test(a))return'anime';
-    if(/portrait|face|girl|boy|woman|man/.test(a)&&!/landscape|city|forest|ocean|mountain/.test(a))return'portrait';
-    if(/landscape|mountain|forest|ocean|sunset|lake|river|valley/.test(a))return'landscape';
-    if(/fantasy|dragon|magic|wizard|elf|fairy|castle|enchanted/.test(a))return'fantasy';
-    if(/sci.?fi|cyberpunk|space|robot|mech|futuristic|alien/.test(a))return'scifi';
-    if(/photo|camera|lens|bokeh|film|dslr/.test(a))return'photo';
-    if(/abstract|fluid|fractal|geometric|surreal/.test(a))return'abstract';
-    if(/3d|render|blender|octane|unreal|voxel/.test(a))return'3d';
-    if(/concept|design|environment|vehicle|armor/.test(a))return'concept';
-    if(/character|warrior|knight|samurai|witch|hero/.test(a))return'character';
-    if(/minimal|minimalist|clean|simple|flat/.test(a))return'minimal';
-    return'concept';
-}
-
-// ============ CIVITAI ============
-function fetchCivitai(){
-    addLog('Civitai: Starting fetch...','inf');
-    var all=[];
-    var sorts=['Most Reactions','Newest','Most Comments'];
-    var p=Promise.resolve();
-    for(var i=0;i<3;i++){
-        (function(page,sort){
-            p=p.then(function(){
-                var params=new URLSearchParams({limit:50,page:page,sort:sort,nsfw:'false'});
-                return pFetch('https://civitai.com/api/v1/images?'+params,20000).then(function(d){
-                    if(!d||!d.items){addLog('Civitai page '+page+': No items returned','err');return}
-                    var items=d.items.filter(function(it){return it.meta&&it.meta.prompt&&it.meta.prompt.length>20});
-                    items=items.map(function(it){
-                        return{id:'c'+it.id,img:it.url,prompt:it.meta.prompt,neg:it.meta.negativePrompt||'',model:it.meta.Model||it.meta.SDVersion||'',steps:it.meta.steps||0,cfg:it.meta.cfgScale||0,sampler:it.meta.sampler||'',seed:it.meta.seed||0,tags:(it.tags||[]).slice(0,8),likes:(it.stats&&it.stats.likeCount)||0,src:'Civitai',cat:guessCat(it.meta.prompt,it.tags)};
-                    });
-                    addLog('Civitai page '+page+' ('+sort+'): '+items.length+' prompts','lok');
-                    all=all.concat(items);
-                }).catch(function(e){addLog('Civitai page '+page+' failed: '+e.message,'lerr')});
-            });
-        })(i+1,sorts[i]);
-    }
-    return p.then(function(){addLog('Civitai total: '+all.length+' prompts',all.length>0?'lok':'lerr');return all});
-}
-
-// ============ LEXICA ============
-function fetchLexica(){
-    addLog('Lexica: Starting fetch...','inf');
-    var all=[];
-    var terms=['art','portrait','landscape','anime','fantasy','cyberpunk'];
-    var p=Promise.resolve();
-    terms.forEach(function(t){
-        p=p.then(function(){
-            return pFetch('https://lexica.art/api/v1/search?q='+encodeURIComponent(t),15000).then(function(d){
-                if(!d||!d.images){addLog('Lexica "'+t+'": No images','err');return}
-                var items=d.images.filter(function(it){return it.prompt&&it.prompt.length>20}).map(function(it){
-                    return{id:'l'+it.id,img:it.srcSmall||it.src,prompt:it.prompt,neg:'',model:'Stable Diffusion',steps:0,cfg:0,sampler:'',seed:it.seed||0,tags:[],likes:0,src:'Lexica',cat:guessCat(it.prompt,[])};
+// ===== CORS FETCH =====
+function pfetch(url, ms) {
+    ms = ms || 12000;
+    var proxies = [
+        url,
+        'https://corsproxy.io/?' + encodeURIComponent(url),
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
+    ];
+    var delays = [0, 800, 2500, 5000];
+    return new Promise(function(resolve, reject) {
+        var done = false, failed = 0;
+        proxies.forEach(function(u, i) {
+            setTimeout(function() {
+                if (done) return;
+                var ctrl = new AbortController();
+                var tid = setTimeout(function() { try { ctrl.abort(); } catch(e) {} }, ms);
+                fetch(u, { signal: ctrl.signal }).then(function(r) {
+                    clearTimeout(tid); if (done) return;
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.text();
+                }).then(function(txt) {
+                    if (done) return; done = true;
+                    try { resolve(JSON.parse(txt)); } catch(e) { resolve(txt); }
+                }).catch(function() {
+                    clearTimeout(tid); failed++;
+                    if (failed >= proxies.length && !done) { done = true; reject(new Error('All failed')); }
                 });
-                addLog('Lexica "'+t+'": '+items.length+' prompts','lok');
-                all=all.concat(items);
-            }).catch(function(e){addLog('Lexica "'+t+'" failed: '+e.message,'lerr')});
+            }, delays[i]);
         });
     });
-    return p.then(function(){addLog('Lexica total: '+all.length+' prompts',all.length>0?'lok':'lerr');return all});
 }
 
-// ============ GENERIC SITE SCRAPER ============
-var UI_GARBAGE=['GraphicPoster','BrandVideos','AIImages','TextToImage','Home','Explore','Trending','Latest','Popular','Categories','About','Contact','Login','Sign','Register','Profile','Settings','Follow','Share','Download','Upload','Create','Generate','Free','Premium','Pricing','FAQ','Blog','Docs','API','Terms','Privacy','Facebook','Twitter','Instagram','Discord','YouTube','Pinterest','Copyright','Cookie','Subscribe','Notification','Loading','404','Learn More','Read More','Get Started','Buy Now','Submit','Cancel','Close','Search','Filter','Sort','Refresh','Clear','Meigen','PromptSeen','GeminiPrompt','PromptSnap','Civitai','Lexica','Sign Up','Log In','Get Pro','Upgrade','Contact Us'];
+// ===== EXTERNAL SOURCE: CIVITAI =====
+function loadCivitai() {
+    log('Civitai: fetching...', 'y');
+    var all = [];
+    var chain = Promise.resolve();
+    ['Most Reactions', 'Newest', 'Most Comments'].forEach(function(sort, page) {
+        chain = chain.then(function() {
+            return pfetch('https://civitai.com/api/v1/images?limit=50&page=' + (page + 1) + '&sort=' + sort + '&nsfw=false', 18000).then(function(d) {
+                if (d && d.items) {
+                    var items = d.items.filter(function(i) { return i.meta && i.meta.prompt && i.meta.prompt.length > 20; });
+                    items.forEach(function(i) {
+                        all.push({ id: 'c' + i.id, prompt: i.meta.prompt, neg: i.meta.negativePrompt || '', cat: gcat(i.meta.prompt, i.tags), model: i.meta.Model || '', steps: i.meta.steps || 0, cfg: i.meta.cfgScale || 0, sampler: i.meta.sampler || '', seed: i.meta.seed || 0, tags: (i.tags || []).slice(0, 6), likes: (i.stats && i.stats.likeCount) || 0, src: 'Civitai', img: i.url || '' });
+                    });
+                    log('Civitai p' + (page + 1) + ': ' + items.length + ' prompts', 'g');
+                }
+            }).catch(function(e) { log('Civitai p' + (page + 1) + ' err: ' + e.message, 'r'); });
+        });
+    });
+    return chain.then(function() { log('Civitai total: ' + all.length, all.length ? 'g' : 'r'); return all; });
+}
 
-function isGarbage(text){
-    if(!text||text.length<35)return true;
-    var t=text.trim();
-    for(var i=0;i<UI_GARBAGE.length;i++){if(t===UI_GARBAGE[i])return true}
-    if(t.length<60&&!t.includes(',')&&!t.includes('.')&&/^[A-Z][a-z]+([A-Z][a-z]+)+$/.test(t.replace(/\s/g,'')))return true;
+// ===== EXTERNAL SOURCE: LEXICA =====
+function loadLexica() {
+    log('Lexica: fetching...', 'y');
+    var all = [];
+    var chain = Promise.resolve();
+    ['art', 'portrait', 'landscape', 'anime', 'fantasy', 'cyberpunk'].forEach(function(q) {
+        chain = chain.then(function() {
+            return pfetch('https://lexica.art/api/v1/search?q=' + encodeURIComponent(q), 15000).then(function(d) {
+                if (d && d.images) {
+                    d.images.forEach(function(i) {
+                        if (i.prompt && i.prompt.length > 20) {
+                            all.push({ id: 'l' + i.id, prompt: i.prompt, neg: '', cat: gcat(i.prompt, []), model: 'Stable Diffusion', steps: 0, cfg: 0, sampler: '', seed: i.seed || 0, tags: [], likes: 0, src: 'Lexica', img: i.srcSmall || i.src || '' });
+                        }
+                    });
+                    log('Lexica "' + q + '": ' + d.images.length, 'g');
+                }
+            }).catch(function(e) { log('Lexica "' + q + '" err', 'r'); });
+        });
+    });
+    return chain.then(function() { log('Lexica total: ' + all.length, all.length ? 'g' : 'r'); return all; });
+}
+
+// ===== GENERIC SCRAPER (Meigen, PromptSeen, GeminiPrompt, PromptSnap) =====
+var UIJUNK = ['GraphicPoster','BrandVideos','AIImages','Home','Explore','Trending','Latest','Popular','Categories','About','Contact','Login','Sign Up','Register','Profile','Settings','Follow','Share','Download','Upload','Create','Generate','Free','Premium','Pricing','FAQ','Blog','Docs','API','Terms','Privacy','Facebook','Twitter','Instagram','Discord','YouTube','Cookie','Subscribe','Loading','404','Learn More','Get Started','Buy Now','Submit','Cancel','Close','Search','Filter','Sort','Refresh','Clear'];
+
+function isJunk(t) {
+    if (!t || t.length < 35) return true;
+    for (var i = 0; i < UIJUNK.length; i++) { if (t === UIJUNK[i]) return true; }
+    if (t.length < 60 && !t.includes(',') && !t.includes('.') && /^[A-Z][a-z]+([A-Z][a-z]+)+$/.test(t.replace(/\s/g, ''))) return true;
     return false;
 }
 
-function scrapeSite(siteName,baseUrl){
-    addLog(siteName+': Starting scrape...','inf');
-    var urls=[
-        baseUrl+'/api/prompts',baseUrl+'/api/v1/prompts',baseUrl+'/api/gallery',
-        baseUrl+'/api/explore',baseUrl+'/api/trending',baseUrl+'/api/latest',
-        baseUrl+'/api/search?q=art',baseUrl+'/api/search?q=portrait',
-        baseUrl+'/',baseUrl+'/explore',baseUrl+'/trending',baseUrl+'/prompts',
-        baseUrl+'/categories',baseUrl+'/gallery',baseUrl+'/latest'
-    ];
-    var results=[];
-    var idx=0;
-
-    return new Promise(function(resolve){
-        function tryNext(){
-            if(idx>=urls.length){
-                addLog(siteName+' total: '+results.length+' prompts',results.length>0?'lok':'lerr');
-                resolve(results);return;
-            }
-            var url=urls[idx];idx++;
-            pFetch(url,10000).then(function(data){
-                // Try JSON extraction
-                if(data&&typeof data==='object'){
-                    var found=extractJSON(data,siteName);
-                    if(found.length>0){
-                        addLog(siteName+' API ('+url+'): '+found.length+' prompts','lok');
-                        results=results.concat(found);resolve(results);return;
-                    }
+function loadScrape(name, base) {
+    log(name + ': fetching...', 'y');
+    var urls = [base + '/api/prompts', base + '/api/v1/prompts', base + '/api/gallery', base + '/api/explore', base + '/', base + '/explore', base + '/trending', base + '/prompts'];
+    var results = [];
+    var idx = 0;
+    return new Promise(function(resolve) {
+        function next() {
+            if (idx >= urls.length) { log(name + ' total: ' + results.length, results.length ? 'g' : 'r'); resolve(results); return; }
+            var url = urls[idx]; idx++;
+            pfetch(url, 10000).then(function(data) {
+                // Try JSON
+                if (data && typeof data === 'object') {
+                    var found = xjson(data, name);
+                    if (found.length > 0) { results = results.concat(found); log(name + ' API: ' + found.length, 'g'); resolve(results); return; }
                 }
-                // Try HTML parsing
-                if(typeof data==='string'&&data.length>200){
-                    var htmlItems=parseHTML(data,siteName);
-                    if(htmlItems.length>0){
-                        addLog(siteName+' HTML ('+url+'): '+htmlItems.length+' prompts','lok');
-                        results=results.concat(htmlItems);resolve(results);return;
-                    }
+                // Try HTML
+                if (typeof data === 'string' && data.length > 200) {
+                    var hf = xhtml(data, name);
+                    if (hf.length > 0) { results = results.concat(hf); log(name + ' HTML: ' + hf.length, 'g'); resolve(results); return; }
                 }
-                addLog(siteName+' ('+url+'): no data','ldim');
-                tryNext();
-            }).catch(function(e){
-                addLog(siteName+' ('+url+'): '+e.message.substring(0,50),'ldim');
-                tryNext();
-            });
+                next();
+            }).catch(function() { next(); });
         }
-        tryNext();
+        next();
     });
 }
 
-function extractJSON(data,src,depth){
-    depth=depth||0;if(depth>6)return[];
-    var items=[];
-    if(!data||typeof data!=='object')return items;
-    if(Array.isArray(data)){
-        for(var i=0;i<data.length;i++){
-            var item=data[i];
-            if(item&&typeof item==='object'&&typeof item.prompt==='string'&&item.prompt.length>20){
-                items.push(makeItem(item,src));
+function xjson(d, src, dep) {
+    dep = dep || 0; if (dep > 5 || !d || typeof d !== 'object') return [];
+    var out = [];
+    if (Array.isArray(d)) {
+        d.forEach(function(it) {
+            if (it && typeof it === 'object' && typeof it.prompt === 'string' && it.prompt.length > 20) {
+                out.push({ id: 'j' + Math.random().toString(36).substr(2, 6), prompt: it.prompt, neg: it.negativePrompt || it.negative || '', cat: gcat(it.prompt, []), model: it.model || '', steps: it.steps || 0, cfg: it.cfgScale || 0, sampler: it.sampler || '', seed: it.seed || 0, tags: [], likes: it.likes || 0, src: src, img: it.image || it.imageUrl || it.src || '' });
             }
-            items=items.concat(extractJSON(item,src,depth+1));
-        }
-    }else{
-        var keys=Object.keys(data);
-        for(var k=0;k<keys.length;k++){
-            var key=keys[k];
-            if(['prompts','items','data','list','results','works','images','cards','entries','gallery','prompt_list'].indexOf(key)!==-1&&Array.isArray(data[key])){
-                for(var j=0;j<data[key].length;j++){
-                    var el=data[key][j];
-                    if(el&&typeof el==='object'&&typeof el.prompt==='string'&&el.prompt.length>20){
-                        items.push(makeItem(el,src));
+            out = out.concat(xjson(it, src, dep + 1));
+        });
+    } else {
+        Object.keys(d).forEach(function(k) {
+            if (['prompts', 'items', 'data', 'list', 'results', 'gallery', 'images'].indexOf(k) !== -1 && Array.isArray(d[k])) {
+                d[k].forEach(function(it) {
+                    if (it && typeof it === 'object' && typeof it.prompt === 'string' && it.prompt.length > 20) {
+                        out.push({ id: 'j' + Math.random().toString(36).substr(2, 6), prompt: it.prompt, neg: it.negativePrompt || '', cat: gcat(it.prompt, []), model: it.model || '', steps: it.steps || 0, cfg: it.cfgScale || 0, sampler: it.sampler || '', seed: it.seed || 0, tags: [], likes: it.likes || 0, src: src, img: it.image || it.imageUrl || it.src || '' });
                     }
-                }
+                });
             }
-            if(typeof data[key]==='object'&&data[key]){
-                items=items.concat(extractJSON(data[key],src,depth+1));
-            }
-        }
+            if (typeof d[k] === 'object') out = out.concat(xjson(d[k], src, dep + 1));
+        });
     }
+    return out;
+}
+
+function xhtml(html, src) {
+    var items = [];
+    // Try __NEXT_DATA__
+    var nm = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if (nm) { try { var nd = JSON.parse(nm[1]); var nf = xjson(nd, src); if (nf.length) return nf; } catch(e) {} }
+    // DOM
+    try {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        doc.querySelectorAll('nav,header,footer,menu,button,a,form,script,style').forEach(function(e) { e.remove(); });
+        var seen = {};
+        doc.querySelectorAll('p,div,span,article,section,li').forEach(function(el) {
+            var t = el.textContent.trim();
+            if (t.length < 35 || t.length > 1200 || isJunk(t)) return;
+            var k = t.substring(0, 50).toLowerCase();
+            if (seen[k]) return; seen[k] = true;
+            items.push({ id: 'h' + Math.random().toString(36).substr(2, 6), prompt: t, neg: '', cat: gcat(t, []), model: '', steps: 0, cfg: 0, sampler: '', seed: 0, tags: [], likes: 0, src: src, img: '' });
+        });
+    } catch(e) {}
     return items;
 }
 
-function makeItem(d,src){
-    var img='';
-    var fields=['image','imageUrl','src','thumbnail','img','cover','preview','image_url','photo','url'];
-    for(var i=0;i<fields.length;i++){if(d[fields[i]]&&typeof d[fields[i]]==='string'){img=d[fields[i]];break}}
-    if(img.startsWith('//'))img='https:'+img;
-    var tags=[];
-    if(Array.isArray(d.tags)){tags=d.tags.slice(0,6).map(function(t){return typeof t==='string'?t:t.name||''}).filter(Boolean)}
-    return{id:'s'+Math.random().toString(36).substr(2,8),img:img,prompt:d.prompt||'',neg:d.negativePrompt||d.negative||d.neg_prompt||'',model:d.model||d.modelName||'',steps:d.steps||0,cfg:d.cfgScale||d.cfg||0,sampler:d.sampler||'',seed:d.seed||0,tags:tags,likes:d.likes||d.likeCount||0,src:src||'Scraper',cat:guessCat(d.prompt||'',tags)};
+// ===== LOAD ALL =====
+function initApp() {
+    log('PromptVerse starting...', 'y');
+    // Load built-in IMMEDIATELY
+    P = builtIn.slice();
+    SC = { civitai: 0, lexica: 0, meigen: 0, promptseen: 0, geminiprompt: 0, promptsnap: 0, github: 0, builtin: P.length };
+    ST = { civitai: 'wait', lexica: 'wait', meigen: 'wait', promptseen: 'wait', geminiprompt: 'wait', promptsnap: 'wait', builtin: 'ok', github: 'wait' };
+    updHdr(); draw();
+    log('Built-in: ' + P.length + ' prompts loaded', 'g');
+    // Fetch external in background
+    fetchExternal();
 }
 
-function parseHTML(html,src){
-    var items=[];
-    // __NEXT_DATA__
-    var nm=html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-    if(nm){try{var nd=JSON.parse(nm[1]);var nf=extractJSON(nd,src);if(nf.length>0)return nf}catch(e){}}
-    // Script blocks
-    var scripts=html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi)||[];
-    for(var s=0;s<scripts.length;s++){
-        var inner=scripts[s].replace(/<script[^>]*>/i,'').replace(/<\/script>/i,'').trim();
-        if(inner.length<50||inner.length>500000)continue;
-        try{var jd=JSON.parse(inner);if(typeof jd==='object'){var jf=extractJSON(jd,src);if(jf.length>2)return jf}}catch(e){}
-    }
-    // DOM parsing
-    var doc=new DOMParser().parseFromString(html,'text/html');
-    doc.querySelectorAll('nav,header,footer,menu,button,a,svg,form,input,script,style,noscript').forEach(function(el){el.remove()});
-    var els=doc.querySelectorAll('p,div,span,article,section,li');
-    var seen={};
-    for(var e=0;e<els.length;e++){
-        var text=els[e].textContent.trim();
-        if(text.length<35||text.length>1500||isGarbage(text))continue;
-        var key=text.substring(0,50).toLowerCase();
-        if(seen[key])continue;seen[key]=true;
-        var imgEl=els[e].querySelector('img');var imgSrc='';
-        if(imgEl){imgSrc=imgEl.getAttribute('src')||imgEl.getAttribute('data-src')||'';if(imgSrc.startsWith('data:'))imgSrc='';if(imgSrc.startsWith('//'))imgSrc='https:'+imgSrc}
-        items.push({id:'h'+Math.random().toString(36).substr(2,8),img:imgSrc,prompt:text,neg:'',model:'',steps:0,cfg:0,sampler:'',seed:0,tags:[],likes:0,src:src,cat:guessCat(text,[])});
-    }
-    return items;
-}
-
-// ============ GITHUB ============
-function fetchGithub(){
-    addLog('GitHub: Starting fetch...','inf');
-    var repos=[
-        'https://raw.githubusercontent.com/DiamondDevs/stable-diffusion-prompt-generator/main/data/prompt_library.json',
-        'https://raw.githubusercontent.com/williammorrow/stable-diffusion-prompts/main/prompts.json'
+function fetchExternal() {
+    var sources = [
+        { k: 'civitai', fn: function() { return loadCivitai(); } },
+        { k: 'lexica', fn: function() { return loadLexica(); } },
+        { k: 'meigen', fn: function() { return loadScrape('Meigen AI', 'https://www.meigen.ai'); } },
+        { k: 'promptseen', fn: function() { return loadScrape('PromptSeen', 'https://promptseen.com'); } },
+        { k: 'geminiprompt', fn: function() { return loadScrape('GeminiPrompt', 'https://geminiprompt.app'); } },
+        { k: 'promptsnap', fn: function() { return loadScrape('PromptSnap', 'https://promptsnap.in'); } },
+        { k: 'github', fn: function() { return loadGithub(); } }
     ];
-    var results=[];var done=0;
-    return new Promise(function(resolve){
-        repos.forEach(function(url){
-            pFetch(url,10000).then(function(data){
-                if(Array.isArray(data)){
-                    data.forEach(function(item,idx){
-                        var pt=typeof item==='string'?item:(item.prompt||item.text||item.content||'');
-                        if(pt&&pt.length>20){results.push({id:'g'+idx+Math.random().toString(36).substr(2,4),img:'',prompt:pt,neg:typeof item==='object'?(item.negative||''):'',model:'Stable Diffusion',steps:0,cfg:0,sampler:'',seed:0,tags:typeof item==='object'?(item.tags||[]):[],likes:0,src:'GitHub',cat:guessCat(pt,item.tags||[])});}
-                    });
-                    addLog('GitHub ('+url.split('/').pop()+'): found data','lok');
-                }else if(data&&typeof data==='object'){
-                    Object.keys(data).forEach(function(cat){if(Array.isArray(data[cat])){data[cat].forEach(function(item,idx){var pt=typeof item==='string'?item:(item.prompt||item.text||'');if(pt&&pt.length>20){results.push({id:'gc'+idx+Math.random().toString(36).substr(2,4),img:'',prompt:pt,neg:'',model:'Stable Diffusion',steps:0,cfg:0,sampler:'',seed:0,tags:[cat],likes:0,src:'GitHub',cat:cat})}})}});
-                    addLog('GitHub: found categorized data','lok');
-                }
-            }).catch(function(e){addLog('GitHub failed: '+e.message.substring(0,40),'lerr')}).then(function(){done++;if(done>=repos.length){addLog('GitHub total: '+results.length,'lok');resolve(results)}});
+    sources.forEach(function(s) {
+        s.fn().then(function(items) {
+            if (items && items.length > 0) {
+                ST[s.k] = 'ok'; SC[s.k] = items.length;
+                P = P.concat(items); dedup(); countSrc();
+                log(s.k + ': +' + items.length + ' loaded', 'g');
+            } else {
+                ST[s.k] = 'err'; SC[s.k] = 0;
+                log(s.k + ': no data found', 'r');
+            }
+            updHdr(); draw();
+        }).catch(function(e) {
+            ST[s.k] = 'err'; SC[s.k] = 0;
+            log(s.k + ' error: ' + (e.message || '').substring(0, 40), 'r');
+            updHdr(); draw();
         });
     });
 }
 
-// ============ 100 BUILT-IN PROMPTS ============
-var BUILTIN=[
-{id:'b1',prompt:'Serene Japanese garden at twilight, stone lanterns glowing warmly, cherry blossom petals drifting across a koi pond, mist rising from the water, ultra detailed, cinematic lighting, 8k',neg:'blurry, low quality, distorted',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['japanese','garden']},
-{id:'b2',prompt:'Cyberpunk street vendor selling neon noodles, rain-slicked pavement reflecting holographic signs, steam rising from food stall, crowded alleyway, blade runner aesthetic, volumetric lighting',neg:'ugly, deformed, blurry',cat:'scifi',model:'SDXL',steps:35,cfg:8,sampler:'Euler a',tags:['cyberpunk','neon']},
-{id:'b3',prompt:'Ethereal forest spirit, translucent glowing skin, hair made of moonlight and fireflies, crown of crystal antlers, dark enchanted forest background, fantasy art, detailed face, masterpiece',neg:'ugly, deformed face, extra limbs',cat:'fantasy',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ SDE Karras',tags:['spirit','forest']},
-{id:'b4',prompt:'Macro photography of morning dewdrops on spider web, golden hour sunlight refracting through each drop creating tiny rainbows, bokeh background of wildflower meadow, hyperrealistic, 8k',neg:'blurry, grainy, overexposed',cat:'photo',model:'SDXL',steps:25,cfg:6,sampler:'DPM++ 2M Karras',tags:['macro','dew']},
-{id:'b5',prompt:'Massive floating crystal city above the clouds, bridges of pure light connecting towers, airships docking at crystal platforms, sunset painting the sky amber and violet, epic scale, concept art',neg:'low quality, pixelated, ugly',cat:'fantasy',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['crystal','city']},
-{id:'b6',prompt:'Steampunk clockwork owl perched on a brass gear, intricate mechanical parts visible through glass panels, copper and gold tones, dark moody background, detailed mechanical illustration',neg:'modern, plastic, blurry',cat:'3d',model:'SDXL',steps:30,cfg:7,sampler:'Euler a',tags:['steampunk','mechanical']},
-{id:'b7',prompt:'Underwater ancient temple ruins overgrown with bioluminescent coral, schools of tropical fish swimming through marble columns, sunbeams filtering through clear water, mystical atmosphere, 8k',neg:'surface, dry, blurry',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['underwater','temple']},
-{id:'b8',prompt:'Minimalist architectural photography, concrete staircase with dramatic shadows, geometric patterns, black and white with one red accent element, clean composition, cinematic perspective',neg:'cluttered, colorful, messy',cat:'minimal',model:'SDXL',steps:22,cfg:6,sampler:'DPM++ 2M',tags:['architecture','minimalist']},
-{id:'b9',prompt:'Anime girl warrior standing on cliff edge, flowing white hair caught in the wind, ornate samurai armor with cherry blossom engravings, katana drawn, dramatic sunset, studio ghibli inspired, cel shaded',neg:'realistic, photographic, western',cat:'anime',model:'Anything V5',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['warrior','sunset']},
-{id:'b10',prompt:'Cozy cabin interior during snowstorm, roaring fireplace casting warm orange light, stacks of old books, steaming mug of cocoa on wooden table, fluffy cat sleeping on rug, hygge aesthetic',neg:'cold colors, modern, sterile',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['cabin','cozy']},
-{id:'b11',prompt:'Abstract fluid art, molten gold and deep ocean blue swirling together, marble texture, high contrast, organic flowing shapes, luxurious feel, 4k texture, metallic sheen',neg:'figurative, realistic, messy',cat:'abstract',model:'SDXL',steps:25,cfg:8,sampler:'DPM++ SDE',tags:['fluid','gold']},
-{id:'b12',prompt:'Astronaut floating in deep space surrounded by a nebula, helmet visor reflecting distant galaxies, tether line trailing into darkness, photorealistic space suit, cosmic color palette, cinematic',neg:'cartoon, low detail, earth',cat:'scifi',model:'SDXL',steps:35,cfg:7,sampler:'DPM++ 2M Karras',tags:['astronaut','space']},
-{id:'b13',prompt:'Dragon made entirely of crystalline ice, perched atop a frozen mountain peak, aurora borealis in the sky, ice crystals refracting rainbow light, majestic and powerful, fantasy illustration',neg:'fire, warm colors, low detail',cat:'fantasy',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['dragon','ice']},
-{id:'b14',prompt:'Vintage vinyl record store interior, warm amber lighting, floor-to-ceiling record bins, analog equipment, 1970s aesthetic, film grain, nostalgic mood, documentary photography style',neg:'modern, digital, clean',cat:'photo',model:'SDXL',steps:24,cfg:6.5,sampler:'DPM++ 2M Karras',tags:['vintage','records']},
-{id:'b15',prompt:'Biomechanical humanoid, half organic half machine, exposed circuitry merging with muscle fiber, glowing neural pathways, dark laboratory setting, HR Giger inspired, intricate detail',neg:'cute, bright, cartoon',cat:'scifi',model:'SDXL',steps:35,cfg:8,sampler:'DPM++ SDE Karras',tags:['biomechanical','cyborg']},
-{id:'b16',prompt:'Enchanted library with books flying through the air, magical golden sparkles, spiral staircases reaching into clouds, ancient tome open on a reading stand with glowing runes, warm candlelight',neg:'modern library, empty, dark',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['library','magic']},
-{id:'b17',prompt:'Product photography of a luxury perfume bottle, dramatic side lighting, liquid amber inside crystal bottle, mist and golden particles in the air, dark reflective surface, commercial quality',neg:'amateur, blurry, cheap',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['product','luxury']},
-{id:'b18',prompt:'Post-apocalyptic greenhouse, nature reclaiming a glass dome, vines breaking through steel frames, flowers blooming from rusted cars, sunlight through cracked panels, hopeful atmosphere',neg:'pristine, clean, brand new',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['post-apocalyptic','nature']},
-{id:'b19',prompt:'Traditional Chinese ink wash painting of mountains emerging from sea of clouds, lone fisherman in small boat below, pine trees clinging to cliffs, minimalist composition, wabi-sabi aesthetic',neg:'western style, photorealistic, colorful',cat:'minimal',model:'SDXL',steps:20,cfg:5.5,sampler:'Euler a',tags:['chinese','ink wash']},
-{id:'b20',prompt:'Alien botanical garden on distant planet, bioluminescent plants in impossible colors, floating spores, crystal formations growing like trees, two moons in violet sky, otherworldly paradise',neg:'earth plants, human, ordinary',cat:'scifi',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['alien','botanical']},
-{id:'b21',prompt:'Isometric voxel art of medieval fantasy village, tiny adventurers in town square, blacksmith forge with glowing embers, windmill turning, flower gardens, cute and colorful, game asset',neg:'realistic, dark, gritty',cat:'3d',model:'SDXL',steps:25,cfg:7,sampler:'Euler a',tags:['voxel','medieval']},
-{id:'b22',prompt:'Baroque angel with six wings descending through golden clouds, dramatic chiaroscuro lighting, oil painting style inspired by Caravaggio, ornate halo, flowing robes, divine radiance',neg:'modern, cartoon, anime',cat:'portrait',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['angel','baroque']},
-{id:'b23',prompt:'Neon-drenched Tokyo alley at 3am, vending machine glow, rain creating rivers of color on ground, silhouette of lone figure with umbrella, reflections everywhere, cyber-noir atmosphere',neg:'daytime, sunny, clean',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['tokyo','neon']},
-{id:'b24',prompt:'Cute robot tending rooftop garden, watering can in mechanical hand, small sunflowers in terra cotta pots, city skyline at sunset, warm and wholesome, pixar style 3D render, soft lighting',neg:'scary, dark, realistic',cat:'3d',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M',tags:['robot','garden']},
-{id:'b25',prompt:'Ancient Norse rune stones in misty forest clearing, carved symbols faintly glowing blue, ravens perched on top, moss and lichen covered surfaces, cinematic fog, mystical viking atmosphere',neg:'modern, clean, bright',cat:'landscape',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['norse','mystical']},
-{id:'b26',prompt:'Deep sea anglerfish with elaborate bioluminescent lure, abyssal plain background with marine snow, otherworldly deep ocean creatures in distance, dramatic underwater photography',neg:'surface, bright, shallow',cat:'photo',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['deep sea','anglerfish']},
-{id:'b27',prompt:'Massive tree of life growing from tiny island in endless ocean, roots visible through crystal clear water, golden leaves falling into the sea, birds circling the canopy, surreal fantasy',neg:'realistic, small, ordinary',cat:'fantasy',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ SDE Karras',tags:['tree of life','surreal']},
-{id:'b28',prompt:'Samurai standing in field of tall grass, armor catching wind, dramatic backlit composition, red sun on horizon, long shadow stretching forward, ink wash meets digital painting, powerful',neg:'modern, casual, bright',cat:'portrait',model:'SDXL',steps:28,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['samurai','dramatic']},
-{id:'b29',prompt:'Retro-futuristic space station interior, 1960s vision of the future, curved plastic furniture, bold primary colors, wall screens showing retro graphics, optimism and wonder, vintage sci-fi',neg:'modern sci-fi, dark, gritty',cat:'concept',model:'SDXL',steps:26,cfg:7,sampler:'Euler a',tags:['retro-futuristic','space']},
-{id:'b30',prompt:'Art nouveau decorative border with interlocking irises and dragonflies, gold leaf accents on deep emerald background, Alphonse Mucha inspired, elegant line work, ornamental design',neg:'photographic, 3D, rough',cat:'abstract',model:'SDXL',steps:24,cfg:7,sampler:'Euler a',tags:['art nouveau','gold']},
-{id:'b31',prompt:'Werewolf transformation in moonlit forest, halfway between man and beast, fur growing across skin, clothes tearing, howling at full moon, dramatic horror art, dark atmosphere, detailed',neg:'cute, cartoon, bright',cat:'character',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['werewolf','horror']},
-{id:'b32',prompt:'Steampunk airship battle above Victorian London, brass and copper airships with propellers, smoke and steam clouds, big ben in background, dramatic sky, golden hour, cinematic wide shot',neg:'modern, clean, boring',cat:'concept',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['steampunk','airship']},
-{id:'b33',prompt:'Ethereal underwater wedding ceremony, bride in flowing white gown floating weightless, bioluminescent jellyfish as lanterns, coral arch decorated with pearls, guests in mermaid attire',neg:'dry, ordinary, church',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ SDE Karras',tags:['underwater','wedding']},
-{id:'b34',prompt:'Cinematic close-up of wolf eyes in snowstorm, ice crystals on fur, amber eyes glowing with determination, shallow depth of field, national geographic quality, intense and powerful',neg:'cartoon, anime, blurry',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['wolf','close-up']},
-{id:'b35',prompt:'Abandoned space station corridor overgrown with alien vegetation, emergency lights flickering, roots breaking through metal walls, mysterious alien flowers blooming from ceiling panels',neg:'clean, new, bright',cat:'scifi',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['abandoned','alien']},
-{id:'b36',prompt:'Miniature fairy village inside hollow tree trunk, tiny glowing mushroom houses, acorn cap roofs, firefly street lamps, cobblestone paths made of seeds, magical and whimsical, tilt-shift',neg:'large, human, modern',cat:'fantasy',model:'SDXL',steps:28,cfg:7,sampler:'Euler a',tags:['fairy','miniature']},
-{id:'b37',prompt:'Cinematic car chase through neon-lit tunnel, motion blur, sports car reflecting city lights, sparks flying from undercarriage, low angle shot, night time, fast and furious aesthetic',neg:'slow, parked, daytime',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['car','neon']},
-{id:'b38',prompt:'Ancient Egyptian goddess Bastet coming to life from hieroglyphic wall carving, gold leaf peeling off, sand swirling, cat-headed figure emerging, torchlight, temple interior, mystical',neg:'modern, cartoon, low detail',cat:'fantasy',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['egyptian','goddess']},
-{id:'b39',prompt:'Photorealistic glass bottle containing a tiny storm, lightning flashing inside, miniature clouds, rain against glass walls, sitting on wooden table, moody lighting, macro photography',neg:'plastic, blurry, simple',cat:'photo',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['glass','storm']},
-{id:'b40',prompt:'Gothic vampire queen on obsidian throne, flowing black lace gown, pale skin, crimson lips, cathedral window casting colored light, blood red wine glass, dark fantasy portrait',neg:'bright, cheerful, modern',cat:'portrait',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['vampire','gothic']},
-{id:'b41',prompt:'Volcanic forge inside a mountain, enormous anvil glowing red hot, dwarf blacksmith hammering mythical sword, sparks flying, rivers of lava in background, epic fantasy, dramatic lighting',neg:'modern, simple, bright',cat:'character',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['forge','dwarf']},
-{id:'b42',prompt:'Zen rock garden from above, raked sand patterns creating spiral designs, perfectly placed moss-covered boulders, cherry petal falling, meditative calm, aerial view, soft morning light',neg:'colorful, busy, chaotic',cat:'minimal',model:'SDXL',steps:22,cfg:6,sampler:'Euler a',tags:['zen','aerial']},
-{id:'b43',prompt:'Cyberpunk geisha with LED kimono, holographic hair pins, neon reflections in rain puddles, neon pink and cyan, traditional meets future, detailed face, neon district background',neg:'historical, plain, boring',cat:'anime',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['geisha','cyberpunk']},
-{id:'b44',prompt:'Surreal melting clock on barren tree branch, Salvador Dali inspired, dreamlike desert landscape, distorted perspective, warm golden tones, existential atmosphere, hyperrealistic',neg:'normal clock, boring',cat:'abstract',model:'SDXL',steps:28,cfg:8,sampler:'DPM++ SDE',tags:['surreal','dali']},
-{id:'b45',prompt:'Massive mecha robot rising from ocean, water cascading off armor plates, sunset backlighting, military fleet in background, pilot visible in cockpit, anime style, epic scale',neg:'small, weak, blurry',cat:'anime',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['mecha','robot']},
-{id:'b46',prompt:'Ghost ship sailing through aurora borealis, tattered sails glowing ethereal green, spectral crew visible at rigging, sea reflecting northern lights, hauntingly beautiful, maritime fantasy',neg:'modern ship, bright',cat:'fantasy',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ SDE Karras',tags:['ghost ship','aurora']},
-{id:'b47',prompt:'Cat wizard studying spellbook in cozy tower room, tiny spectacles on nose, floating candles, potion bottles bubbling, shelves overflowing with magical artifacts, warm firelight, whimsical',neg:'realistic, dark, scary',cat:'character',model:'SDXL',steps:26,cfg:7,sampler:'Euler a',tags:['cat','wizard']},
-{id:'b48',prompt:'Futuristic Tokyo at street level, holographic advertisements, autonomous vehicles, drone delivery, rain and neon, umbrellas, crowd of diverse cyberpunk citizens, depth of field, cinematic, 8k',neg:'historical, empty, rural',cat:'scifi',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['tokyo','futuristic']},
-{id:'b49',prompt:'Sandworm erupting from desert, massive scale, Dune inspired, spice cloud, riders on its back, dramatic sky, golden sand particles, epic sci-fi concept art, cinematic composition',neg:'small, cute, colorful',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['sandworm','desert']},
-{id:'b50',prompt:'Crystal cave interior, enormous amethyst geode walls, underground lake reflecting purple light, stalactites, explorer with torch providing warm contrast, fantasy landscape, 8k',neg:'surface, outdoor, ordinary',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['crystal','cave']},
-{id:'b51',prompt:'Witch cottage in autumn forest, thatched roof with herbs drying, broomstick by door, black cat on fence, smoke from crooked chimney, golden leaves falling, warm and inviting, storybook',neg:'modern, dark, scary, urban',cat:'fantasy',model:'SDXL',steps:28,cfg:7,sampler:'Euler a',tags:['witch','autumn']},
-{id:'b52',prompt:'Neural network visualization made physical, glowing synapses floating in dark void, data flowing as streams of light, brain-like structure of glass and fiber optics, sci-fi abstract, 8k',neg:'organic brain, messy, blurry',cat:'abstract',model:'SDXL',steps:30,cfg:8,sampler:'DPM++ SDE Karras',tags:['neural','data']},
-{id:'b53',prompt:'Valiant knight kneeling before ancient sword in stone, cathedral rays of light, stained glass casting colors, quest beginning moment, dramatic chiaroscuro, Arthurian legend, detailed armor',neg:'casual, modern, cartoon',cat:'character',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['knight','sword']},
-{id:'b54',prompt:'Zero gravity garden inside space station, flowers and vegetables growing in spiral patterns, Earth visible through cupola, astronaut tending plants, sunlight through windows, peaceful',neg:'dark, dystopian, dirty',cat:'scifi',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['space station','garden']},
-{id:'b55',prompt:'Mycelium network connecting forest floor, bioluminescent fungi in impossible colors, fairy rings, spores creating light trails, microscopic and macroscopic view combined, mystical nature',neg:'city, urban, dark',cat:'photo',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['mushroom','bioluminescent']},
-{id:'b56',prompt:'Watercolor painting of Venice canals at dawn, gondola with silhouette couple, pastel buildings reflecting in still water, laundry hanging between windows, Italian atmosphere, loose brushwork',neg:'photograph, sharp, modern',cat:'landscape',model:'SDXL',steps:24,cfg:6,sampler:'Euler a',tags:['venice','watercolor']},
-{id:'b57',prompt:'Demon king on obsidian throne of bones, crown of black iron, rivers of fire in cavern below, winged silhouettes in smoke, dark fantasy, imposing figure, dramatic uplight, detailed armor',neg:'cute, bright, angelic',cat:'character',model:'SDXL',steps:34,cfg:8,sampler:'DPM++ SDE Karras',tags:['demon','throne']},
-{id:'b58',prompt:'Aurora borealis over glacial lake, perfect reflections, snow-covered pine forest silhouettes, lone tipi with warm fire glow, stars visible, wilderness of northern Canada, long exposure',neg:'city, urban, daylight',cat:'landscape',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['aurora','glacier']},
-{id:'b59',prompt:'Bustling alien marketplace, diverse extraterrestrial species trading, bioluminescent market stalls, floating platforms, exotic fruits and artifacts, cantina scene, detailed crowd, cinematic',neg:'earth, human only, empty',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['alien','marketplace']},
-{id:'b60',prompt:'Kintsugi porcelain fox, golden repairs glowing, broken pieces reassembled, Japanese philosophy of beauty in imperfection, studio lighting, fine art photography, white background, elegant',neg:'colorful background, messy',cat:'minimal',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['kintsugi','porcelain']},
-{id:'b61',prompt:'Colossal ancient statue half-buried in desert sand, only face and one hand visible, wind-carved features, lone traveler standing on palm for scale, Lawrence of Arabia atmosphere, epic',neg:'small, indoor, modern',cat:'landscape',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['statue','desert']},
-{id:'b62',prompt:'Bioluminescent deep ocean leviathan passing over tiny submarine, whale-like creature with glowing patterns, deep sea research vessel with headlights, sense of scale and wonder, cinematic',neg:'surface, bright, small',cat:'scifi',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['leviathan','deep sea']},
-{id:'b63',prompt:'Art deco metropolis skyline at dusk, golden and chrome skyscrapers, zeppelins docking at spires, Gatsby era meets future, geometric patterns, warm sunset, Chrysler building inspired',neg:'modern, boring, dull',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['art deco','city']},
-{id:'b64',prompt:'Tiger made of flowing water and fish, koi swimming through its body, waterfall mane, river forming the tail, Japanese woodblock print meets digital art, Hokusai inspired, blue and orange',neg:'realistic tiger, photographic',cat:'abstract',model:'SDXL',steps:28,cfg:7.5,sampler:'Euler a',tags:['tiger','water']},
-{id:'b65',prompt:'Abandoned amusement park reclaimed by nature, ferris wheel covered in vines, carousel horses in tall grass, haunted but beautiful, golden hour, nostalgia, urban exploration photography',neg:'operating, bright, clean',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['abandoned','nature']},
-{id:'b66',prompt:'Elemental goddess of autumn, dress made of falling leaves, crown of acorns, skin like birch bark, arms raised conducting wind, forest responding to her presence, detailed face, pre-raphaelite',neg:'modern, spring, winter',cat:'portrait',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ SDE Karras',tags:['goddess','autumn']},
-{id:'b67',prompt:'Interdimensional portal in ancient ruins, stone archway framing swirling cosmic vortex, artifacts from different realities scattered around, explorer reaching toward light, concept art',neg:'ordinary, empty, modern door',cat:'concept',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['portal','ruins']},
-{id:'b68',prompt:'Fox spirit kitsune in cherry blossom storm, nine tails flowing, porcelain mask half-hanging, lantern floating nearby, Japanese mythology, moonlit night, digital painting, ethereal',neg:'western, realistic animal, day',cat:'anime',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ SDE Karras',tags:['kitsune','cherry blossom']},
-{id:'b69',prompt:'Bonsai tree that is actually a tiny living planet, miniature mountains, oceans, clouds and tiny civilizations on its branches, cosmic roots reaching into starfield, surreal concept',neg:'normal bonsai, realistic, boring',cat:'concept',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['bonsai','planet']},
-{id:'b70',prompt:'Fire dancer performing at night, trails of flame creating patterns in air, sparks flying, dynamic movement, tribal ceremony, muscle definition, dramatic lighting, sports photography',neg:'static, day, indoor',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['fire','dancer']},
-{id:'b71',prompt:'Clockwork heart made of brass and crystal, gears visible through transparent casing, blue energy fluid pumping through glass tubes, ornate victorian mechanism, macro 3D render',neg:'organic, simple, modern',cat:'3d',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['clockwork','steampunk']},
-{id:'b72',prompt:'Space whale swimming through nebula, barnacles that are tiny planets, cosmic dust trail, star formation in its wake, enormous scale, blue and purple tones, spiritual sci-fi, majestic',neg:'ocean, earth, small',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['space whale','nebula']},
-{id:'b73',prompt:'Rain-soaked neon back alley with food stall, steam and smoke mixing with rain, cook preparing ramen, warm light from stall contrasting cold blue rain, intimate urban moment, cinematic',neg:'sunny, clean, empty',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['neon','rain']},
-{id:'b74',prompt:'Ice queen standing in frozen throne room, dress made of crystalline frost, breath visible as ice crystals, frozen guards flanking throne, cold blue palette with warm candle accents',neg:'warm, summer, casual',cat:'portrait',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['ice queen','frozen']},
-{id:'b75',prompt:'Microscopic view of sound waves creating geometric patterns in sand, cymatics, kaleidoscopic symmetry, vibrant colors from frequency mapping, scientific art, precision and beauty, 8k',neg:'messy, random, blurry',cat:'abstract',model:'SDXL',steps:28,cfg:8,sampler:'DPM++ SDE',tags:['cymatics','geometric']},
-{id:'b76',prompt:'Magical apothecary shop, shelves of glowing potion bottles, dried herbs hanging from ceiling, ancient scales on wooden counter, cat sleeping on grimoire, warm firelight, detailed interior',neg:'modern pharmacy, clean, bright',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['apothecary','potions']},
-{id:'b77',prompt:'Jellyfish cathedral, enormous translucent jellyfish forming arches and vaults, bioluminescent patterns like stained glass, deep ocean floor, small diver for scale, ethereal blue light',neg:'surface, church, land',cat:'concept',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['jellyfish','cathedral']},
-{id:'b78',prompt:'Duel between sun and moon warriors on eclipse battlefield, solar sword vs lunar scythe, contrasting warm and cold light, dramatic action pose, celestial arena, anime style, dynamic',neg:'static, boring, realistic',cat:'anime',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['warrior','eclipse']},
-{id:'b79',prompt:'Alien flora terraforming barren planet, colorful plants breaking through cracked earth, transformation in progress, before and after in single frame, sci-fi meets nature documentary',neg:'earth plants, dead, dark',cat:'scifi',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['alien','terraforming']},
-{id:'b80',prompt:'Ancient celestial map painted on dome ceiling, zodiac figures coming to life, gold leaf stars, midnight blue background, renaissance observatory, person looking up in wonder, baroque art',neg:'modern, digital, simple',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['celestial','zodiac']},
-{id:'b81',prompt:'Giant clocktower in steampunk city square, gears visible through glass face, steam venting from pipes, aerial tram passing, citizens in Victorian attire, warm amber light, detailed cityscape',neg:'modern, clean, simple',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['steampunk','clocktower']},
-{id:'b82',prompt:'Underwater portrait of a mermaid in coral throne room, bioluminescent jellyfish chandelier, pearls and shells decorating ancient pillars, shafts of sunlight from above, regal and mystical',neg:'dry, land, ordinary',cat:'portrait',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ SDE Karras',tags:['mermaid','underwater']},
-{id:'b83',prompt:'Crystalline butterfly garden on alien world, massive transparent wings refracting prismatic light, floating pollen particles, surreal landscape with twin suns, macro photography, dreamlike',neg:'earth butterfly, dark, blurry',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['butterfly','crystal']},
-{id:'b84',prompt:'Dark elf archer in snow-covered pine forest, pale skin against white landscape, black bow drawn, silver hair flowing, violet eyes, hunting in moonlight, dark fantasy illustration',neg:'bright, cheerful, modern',cat:'character',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['dark elf','archer']},
-{id:'b85',prompt:'Sakura tree made of stained glass, light passing through pink and green panes, casting colorful shadows on stone path, Japanese temple garden, golden hour, detailed glass texture, 8k',neg:'realistic tree, plain, boring',cat:'landscape',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['sakura','stained glass']},
-{id:'b86',prompt:'Phantom orchestra playing in ruined concert hall, instruments floating, spectral musicians, moonlight streaming through collapsed roof, ethereal and hauntingly beautiful, cinematic',neg:'modern, bright, ordinary',cat:'concept',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ SDE Karras',tags:['orchestra','phantom']},
-{id:'b87',prompt:'Geode cave with amethyst crystals forming natural pipe organ, mineral deposits creating musical instrument, explorer playing crystal keys, resonating purple and blue light, fantasy landscape',neg:'ordinary cave, dark, boring',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['geode','crystal']},
-{id:'b88',prompt:'Quantum computer visualization, qubits as luminous orbs in superposition, probability clouds, entanglement visualized as golden threads, dark void, scientific art, intricate detail, 8k',neg:'messy, blurry, simple',cat:'abstract',model:'SDXL',steps:30,cfg:8,sampler:'DPM++ SDE',tags:['quantum','scientific']},
-{id:'b89',prompt:'Desert nomad riding giant sand scorpion, tent caravan in distant dunes, heat haze, two moons, alien world, leather and bone armor, epic creature design, concept art, cinematic',neg:'earth scorpion, small, modern',cat:'concept',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['scorpion','desert']},
-{id:'b90',prompt:'Victorian ghost lady descending grand staircase, translucent form, chandelier flickering, faded wallpaper, rain outside tall windows, gothic horror atmosphere, detailed period dress',neg:'bright, modern, casual',cat:'portrait',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ SDE Karras',tags:['ghost','victorian']},
-{id:'b91',prompt:'Bioluminescent mushroom forest at midnight, enormous fungi in teal and magenta, spores creating light trails, tiny fairy houses at base, mystical and enchanting, fantasy illustration',neg:'daytime, ordinary, dark',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['mushroom','bioluminescent']},
-{id:'b92',prompt:'Time traveler standing at crossroads of multiple eras, roman colosseum merges with cyberpunk city, medieval castle meets space station, temporal anomaly, paradox visualization, surreal',neg:'single era, boring, plain',cat:'concept',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['time travel','paradox']},
-{id:'b93',prompt:'Ballet dancer frozen mid-leap, shattered marble debris suspended around her, dramatic spotlight, renaissance sculpture come to life, black and white with gold accents, slow motion effect',neg:'casual, standing, colorful',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['ballet','marble']},
-{id:'b94',prompt:'Neon samurai on motorcycle in rain-soaked street, holographic katana, chrome armor reflecting city lights, puddle reflections, cyberpunk anime style, dynamic angle, detailed vehicle',neg:'static, bright, historical',cat:'anime',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['samurai','cyberpunk']},
-{id:'b95',prompt:'Ancient stone bridge over cosmic void, star-filled gap between cliffs, hooded traveler with lantern, path made of floating stepping stones, dark fantasy landscape, mysterious atmosphere',neg:'ordinary bridge, daytime, city',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ SDE Karras',tags:['bridge','cosmic']},
-{id:'b96',prompt:'Origami crane that has come to life and is flying, paper texture visible, fold lines glowing with soft light, cherry blossom caught in paper wing, Japanese aesthetic, dreamlike, detailed',neg:'realistic bird, dark, scary',cat:'abstract',model:'SDXL',steps:26,cfg:7,sampler:'Euler a',tags:['origami','paper']},
-{id:'b97',prompt:'Galactic whale breaching through nebula surface, cosmic ocean of stars, spiral galaxy forming from splash, space dolphins in background, blue and gold cosmic palette, spiritual sci-fi',neg:'earth ocean, realistic whale',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['whale','galaxy']},
-{id:'b98',prompt:'Autumn forest path with floating lanterns, golden and red leaves suspended mid-fall, misty atmosphere, wooden bridge over stream, warm amber light, peaceful and nostalgic, 8k detailed',neg:'spring, winter, urban',cat:'landscape',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['autumn','lanterns']},
-{id:'b99',prompt:'Robot painter in sunlit studio, mechanical arm holding brush, canvas showing evolving masterpiece, oil paint splatters on metal frame, warm golden light through dusty windows, 3D render',neg:'human painter, dark, blurry',cat:'3d',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M',tags:['robot','painter']},
-{id:'b100',prompt:'Crystal palace under northern lights, ice architecture with aurora reflecting in frozen walls, snow falling gently, warm fire glow from within, arctic fantasy, breathtaking scale, cinematic',neg:'desert, tropical, ordinary',cat:'fantasy',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ SDE Karras',tags:['crystal','aurora']}
-];
-BUILTIN.forEach(function(b){b.src='Built-in';b.likes=Math.floor(Math.random()*300)+10});
+function loadGithub() {
+    log('GitHub: fetching...', 'y');
+    var out = [];
+    return pfetch('https://raw.githubusercontent.com/DiamondDevs/stable-diffusion-prompt-generator/main/data/prompt_library.json', 8000).then(function(d) {
+        if (Array.isArray(d)) { d.forEach(function(it, i) { var pt = typeof it === 'string' ? it : (it.prompt || it.text || ''); if (pt && pt.length > 20) out.push({ id: 'g' + i, prompt: pt, neg: '', cat: gcat(pt, []), model: 'SD', steps: 0, cfg: 0, sampler: '', seed: 0, tags: [], likes: 0, src: 'GitHub', img: '' }); }); log('GitHub: ' + out.length, 'g'); }
+        return out;
+    }).catch(function(e) { log('GitHub err: ' + e.message, 'r'); return out; });
+}
 
-// ============ CACHE ============
-var CACHE_KEY='pv_c3';var CACHE_DUR=6*60*60*1000;
-function getCache(){try{var c=JSON.parse(localStorage.getItem(CACHE_KEY));if(c&&Date.now()-c.t<CACHE_DUR&&c.d&&c.d.length>5)return c.d}catch(e){}return null}
-function setCache(data){try{localStorage.setItem(CACHE_KEY,JSON.stringify({d:data,t:Date.now()}))}catch(e){}}
+function dedup() {
+    var seen = {};
+    P = P.filter(function(p) { var k = p.prompt.substring(0, 60).toLowerCase().trim(); if (seen[k]) return false; seen[k] = true; return true; });
+    P.sort(function(a, b) { return (b.likes || 0) - (a.likes || 0); });
+}
 
-// ============ LOAD ALL - INSTANT BUILT-IN + BACKGROUND APIS ============
-function loadAllSources(force){
-    addLog('Starting PromptVerse...','inf');
-    var cached=null;
-    if(!force){cached=getCache()}
-    if(cached&&cached.length>5){
-        S.prompts=cached;
-        addLog('Loaded '+cached.length+' prompts from cache','lok');
-    }else{
-        S.prompts=BUILTIN.map(function(b){return Object.assign({},b)});
-        addLog('Loaded '+BUILTIN.length+' built-in prompts','lok');
+function countSrc() {
+    SC = { civitai: 0, lexica: 0, meigen: 0, promptseen: 0, geminiprompt: 0, promptsnap: 0, github: 0, builtin: 0 };
+    P.forEach(function(p) {
+        var k = (p.src || '').toLowerCase().replace(/[\s.-]/g, '');
+        if (k === 'builtin') SC.builtin++;
+        else if (k === 'civitai') SC.civitai++;
+        else if (k === 'lexica') SC.lexica++;
+        else if (k === 'meigenai') SC.meigen++;
+        else if (k === 'promptseen') SC.promptseen++;
+        else if (k === 'geminiprompt') SC.geminiprompt++;
+        else if (k === 'promptsnap') SC.promptsnap++;
+        else if (k === 'github') SC.github++;
+    });
+}
+
+function updHdr() {
+    var ok = 0; for (var k in ST) { if (ST[k] === 'ok' || ST[k] === 'wait') ok++; }
+    var loading = false; for (var k in ST) { if (ST[k] === 'wait') { loading = true; break; } }
+    document.getElementById('hsub').textContent = loading ? P.length + ' prompts, loading more...' : P.length + ' prompts from ' + ok + ' sources';
+}
+
+// ===== FILTER =====
+function filtered() {
+    var l = P.slice();
+    if (SRC !== 'all') l = l.filter(function(p) { return (p.src || '').toLowerCase().replace(/[\s.-]/g, '') === SRC; });
+    if (CAT !== 'all') l = l.filter(function(p) { return p.cat === CAT; });
+    if (Q) { var q = Q.toLowerCase(); l = l.filter(function(p) { return p.prompt.toLowerCase().indexOf(q) !== -1; }); }
+    return l;
+}
+
+// ===== NAV =====
+function nav(v) {
+    V = v;
+    document.querySelectorAll('.nav-i').forEach(function(el) { el.classList.toggle('on', el.dataset.v === v); });
+    draw();
+    document.getElementById('main').scrollTop = 0;
+}
+
+// ===== DRAW =====
+function draw() {
+    var m = document.getElementById('main');
+    try {
+        if (V === 'home') m.innerHTML = drawHome();
+        else if (V === 'explore') m.innerHTML = drawExplore();
+        else if (V === 'search') m.innerHTML = drawSearch();
+        else if (V === 'saved') m.innerHTML = drawSaved();
+    } catch(e) {
+        m.innerHTML = '<div style="padding:20px;color:var(--danger)">Render error: ' + esc(e.message) + '</div>';
     }
-    countSources();updateHdr();render();
-    if(force||!cached||cached.length<=BUILTIN.length+5){fetchAllAPIs()}
 }
 
-function countSources(){
-    S.srcCounts={civitai:0,lexica:0,meigen:0,promptseen:0,geminiprompt:0,promptsnap:0,github:0,builtin:0};
-    S.prompts.forEach(function(p){
-        var k=(p.src||'').toLowerCase().replace(/[\s.-]/g,'');
-        if(k==='builtin')S.srcCounts.builtin++;
-        else if(k==='civitai')S.srcCounts.civitai++;
-        else if(k==='lexica')S.srcCounts.lexica++;
-        else if(k==='meigenai')S.srcCounts.meigen++;
-        else if(k==='promptseen')S.srcCounts.promptseen++;
-        else if(k==='geminiprompt')S.srcCounts.geminiprompt++;
-        else if(k==='promptsnap')S.srcCounts.promptsnap++;
-        else if(k==='github')S.srcCounts.github++;
-    });
+function drawHome() {
+    var f = filtered();
+    var feat = f[0];
+    var trend = f.slice(0, 12);
+    var more = f.slice(12, 24);
+    var h = '<div class="anim">';
+    // Hero
+    h += '<section class="hero" style="padding:20px 14px 16px">';
+    h += '<p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px">PromptVerse</p>';
+    h += '<h2 style="font-size:22px;font-weight:800;line-height:1.15;margin-bottom:6px">Discover AI<br>Image Prompts</h2>';
+    h += '<p style="font-size:12px;color:var(--muted);margin-bottom:14px">' + P.length + ' prompts from ' + Object.values(ST).filter(function(v) { return v === 'ok'; }).length + ' sources</p>';
+    h += '<div onclick="nav(\'search\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;cursor:pointer"><i class="fas fa-magnifying-glass" style="color:var(--muted)"></i><span style="color:var(--muted);font-size:13px">Search prompts...</span></div>';
+    h += '</section>';
+    // Status
+    h += '<div class="sbar">';
+    for (var k in ST) { var lbl = k === 'meigen' ? 'Meigen' : k === 'builtin' ? 'Built-in' : k.charAt(0).toUpperCase() + k.slice(1); h += '<span class="pill ' + ST[k] + '"><span class="dot"></span>' + lbl + '</span>'; }
+    h += '</div>';
+    // Cats
+    h += '<div style="padding:0 14px 14px"><div class="chips">';
+    CATS.forEach(function(c) { h += '<div class="chip ' + (CAT === c.id ? 'on' : '') + '" onclick="CAT=\'' + c.id + '\';draw()">' + c.n + '</div>'; });
+    h += '</div></div>';
+    // Featured
+    if (feat) {
+        h += '<section style="padding:0 14px 16px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">Featured</h3>';
+        h += '<div onclick="openDet(\'' + feat.id + '\')" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer">';
+        if (feat.img) h += '<img src="' + feat.img + '" style="width:100%;height:180px;object-fit:cover" loading="lazy" onerror="this.style.display=\'none\'">';
+        h += '<div style="padding:12px"><p style="font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(feat.prompt.substring(0, 150)) + '</p>';
+        h += '<span style="font-size:9px;color:var(--accent);margin-top:6px;display:inline-block">' + feat.src + '</span></div></div></section>';
+    }
+    // Trending
+    h += '<section style="padding:0 14px 16px"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><h3 style="font-size:14px;font-weight:700">Trending</h3><span onclick="nav(\'explore\')" style="font-size:11px;color:var(--accent);cursor:pointer">See all</span></div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+    trend.forEach(function(p, i) { h += card(p, i); });
+    h += '</div></section>';
+    // More
+    if (more.length) {
+        h += '<section style="padding:0 14px 16px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">More</h3>';
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+        more.forEach(function(p, i) { h += card(p, i + 12); });
+        h += '</div>';
+        h += '<div style="text-align:center;margin-top:16px"><button onclick="nav(\'explore\')" class="btn btn2"><i class="fas fa-compass"></i> Explore All ' + f.length + '</button></div></section>';
+    }
+    h += '</div>';
+    return h;
 }
 
-function fetchAllAPIs(){
-    S.srcStatus={civitai:'load',lexica:'load',meigen:'load',promptseen:'load',geminiprompt:'load',promptsnap:'load',builtin:'ok',github:'load'};
-    updateHdr();render();
+function drawExplore() {
+    var f = filtered();
+    var srcs = ['all', 'civitai', 'lexica', 'meigen', 'promptseen', 'geminiprompt', 'promptsnap', 'github', 'builtin'];
+    var h = '<div class="anim"><section style="padding:14px"><h2 style="font-size:16px;font-weight:700;margin-bottom:12px">Explore <span style="font-size:11px;color:var(--muted);font-weight:400">' + f.length + ' prompts</span></h2>';
+    h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">';
+    srcs.forEach(function(s) { var lbl = s === 'all' ? 'All' : s === 'builtin' ? 'Built-in' : s === 'meigen' ? 'Meigen' : s.charAt(0).toUpperCase() + s.slice(1); h += '<div class="chip ' + (SRC === s ? 'on' : '') + '" onclick="SRC=\'' + s + '\';draw()" style="font-size:9px;padding:4px 8px">' + lbl + '</div>'; });
+    h += '</div><div class="chips">';
+    CATS.forEach(function(c) { h += '<div class="chip ' + (CAT === c.id ? 'on' : '') + '" onclick="CAT=\'' + c.id + '\';draw()">' + c.n + '</div>'; });
+    h += '</div></section><section style="padding:0 14px 24px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+    if (f.length) f.forEach(function(p, i) { h += card(p, i); });
+    else h += '<div class="empty" style="grid-column:span 2"><i class="fas fa-wand-magic-sparkles"></i><p>No prompts match filters</p><button onclick="SRC=\'all\';CAT=\'all\';draw()" class="btn btn1" style="margin-top:10px;font-size:11px">Clear Filters</button></div>';
+    h += '</div></section></div>';
+    return h;
+}
 
-    var sources=[
-        {key:'civitai',fn:function(){return fetchCivitai()},name:'Civitai'},
-        {key:'lexica',fn:function(){return fetchLexica()},name:'Lexica'},
-        {key:'meigen',fn:function(){return scrapeSite('Meigen AI','https://www.meigen.ai')},name:'Meigen AI'},
-        {key:'promptseen',fn:function(){return scrapeSite('PromptSeen','https://promptseen.com')},name:'PromptSeen'},
-        {key:'geminiprompt',fn:function(){return scrapeSite('GeminiPrompt','https://geminiprompt.app')},name:'GeminiPrompt'},
-        {key:'promptsnap',fn:function(){return scrapeSite('PromptSnap','https://promptsnap.in')},name:'PromptSnap'},
-        {key:'github',fn:function(){return fetchGithub()},name:'GitHub'}
-    ];
+function drawSearch() {
+    var h = '<div class="anim"><section style="padding:14px"><h2 style="font-size:16px;font-weight:700;margin-bottom:12px">Search</h2>';
+    h += '<div style="position:relative;margin-bottom:10px"><i class="fas fa-magnifying-glass" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px"></i>';
+    h += '<input type="text" id="sinp" placeholder="Search prompts..." value="' + esc(Q) + '" onkeydown="if(event.key===\'Enter\'){Q=this.value.trim();draw()}" style="width:100%;padding:11px 14px 11px 40px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:13px;outline:none"></div>';
+    h += '<button onclick="Q=document.getElementById(\'sinp\').value.trim();draw()" class="btn btn1" style="width:100%"><i class="fas fa-magnifying-glass"></i> Search</button></section>';
+    if (Q) {
+        var f = filtered();
+        h += '<section style="padding:0 14px"><p style="font-size:11px;color:var(--muted);margin-bottom:10px">' + f.length + ' results</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">';
+        if (f.length) f.slice(0, 30).forEach(function(p, i) { h += card(p, i); });
+        else h += '<div class="empty" style="grid-column:span 2"><i class="fas fa-magnifying-glass"></i><p>No results</p></div>';
+        h += '</div></section>';
+    } else {
+        h += '<section style="padding:0 14px"><p style="font-size:12px;font-weight:600;margin-bottom:10px">Popular Searches</p><div style="display:flex;flex-wrap:wrap;gap:5px">';
+        ['anime','landscape','cyberpunk','portrait','fantasy','dragon','space','robot','sunset','neon city','forest','cat'].forEach(function(q) { h += '<div class="chip" onclick="Q=\'' + q + '\';draw()">' + q + '</div>'; });
+        h += '</div></section>';
+    }
+    h += '</div>';
+    return h;
+}
 
-    sources.forEach(function(src){
-        src.fn().then(function(items){
-            if(items&&items.length>0){
-                S.srcStatus[src.key]='ok';
-                S.srcCounts[src.key]=items.length;
-                items.forEach(function(it){if(!it.src||it.src==='Scraper')it.src=src.name});
-                S.prompts=S.prompts.concat(items);
-                dedupe();countSources();setCache(S.prompts);
-                addLog(src.name+': +'+items.length+' prompts loaded!','lok');
-            }else{
-                S.srcStatus[src.key]='err';
-                addLog(src.name+': No prompts found','lerr');
-            }
-            updateHdr();render();
-        }).catch(function(e){
-            S.srcStatus[src.key]='err';
-            addLog(src.name+' failed: '+(e.message||'unknown').substring(0,60),'lerr');
-            updateHdr();render();
+function drawSaved() {
+    var h = '<div class="anim"><section style="padding:14px"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:16px;font-weight:700">Saved <span style="font-size:11px;color:var(--muted);font-weight:400">' + SVD.length + '</span></h2>';
+    if (SVD.length) h += '<button onclick="if(confirm(\'Clear all?\')){SVD=[];try{localStorage.setItem(\'pvs\',\'[]\')}catch(e){}draw();toast(\'Cleared\')}" class="btn btn2" style="padding:5px 10px;font-size:10px;color:var(--danger);border-color:rgba(244,63,94,.3)"><i class="fas fa-trash"></i></button>';
+    h += '</div></section>';
+    if (SVD.length) {
+        h += '<section style="padding:0 14px 24px">';
+        SVD.forEach(function(p, i) {
+            h += '<div onclick="openDet(SVD[' + i + '].id)" style="display:flex;gap:10px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:6px">';
+            h += '<div style="flex:1;min-width:0"><p style="font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5">' + esc(p.prompt.substring(0, 120)) + '</p>';
+            h += '<span style="font-size:9px;color:var(--accent)">' + (p.src || 'Built-in') + '</span></div>';
+            h += '<button onclick="event.stopPropagation();sv(\'' + p.id + '\')" style="background:none;border:none;color:var(--accent3);cursor:pointer;font-size:12px;padding:4px"><i class="fas fa-bookmark"></i></button></div>';
         });
+        h += '</section>';
+    } else {
+        h += '<div class="empty"><i class="fas fa-bookmark"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No saved prompts</p><button onclick="nav(\'explore\')" class="btn btn1" style="margin-top:12px;font-size:11px"><i class="fas fa-compass"></i> Explore</button></div>';
+    }
+    h += '</div>';
+    return h;
+}
+
+function card(p, idx) {
+    var saved = isSaved(p.id);
+    var hasImg = p.img && !IE[p.id];
+    var h = '<div class="card anim" style="animation-delay:' + Math.min(idx * 35, 400) + 'ms" onclick="openDet(\'' + p.id + '\')">';
+    if (hasImg) {
+        h += '<div style="position:relative;overflow:hidden"><img src="' + p.img + '" loading="lazy" onerror="this.style.display=\'none\';IE[\'' + p.id + '\']=true">';
+        h += '<div class="ov"><p>' + esc(p.prompt.substring(0, 100)) + '</p></div></div>';
+    } else {
+        h += '<div style="aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;padding:10px;position:relative"><i class="fas fa-wand-magic-sparkles" style="font-size:22px;opacity:.12;position:absolute"></i>';
+        h += '<p style="font-size:10px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden;position:relative">' + esc(p.prompt.substring(0, 250)) + '</p></div>';
+    }
+    h += '<div class="ft"><span class="src">' + (p.src || 'Built-in') + '</span>';
+    h += '<button class="sbtn ' + (saved ? 'on' : '') + '" onclick="event.stopPropagation();sv(\'' + p.id + '\')"><i class="fas fa-bookmark"></i></button></div></div>';
+    return h;
+}
+
+// ===== DETAIL OVERLAY =====
+function openDet(id) {
+    var p = findP(id); if (!p) return;
+    var saved = isSaved(id);
+    var o = document.getElementById('detOv');
+    var h = '<div class="ohdr"><button class="ibtn" onclick="closeDet()"><i class="fas fa-arrow-left"></i></button><div style="display:flex;gap:6px"><button class="ibtn" onclick="sv(\'' + id + '\')"><i class="fas fa-bookmark" style="color:' + (saved ? 'var(--accent3)' : 'var(--muted)') + '"></i></button><button class="ibtn" onclick="cp(findP(\'' + id + '\').prompt)"><i class="fas fa-copy"></i></button></div></div>';
+    if (p.img) h += '<img src="' + p.img + '" style="width:100%;max-height:350px;object-fit:contain;background:var(--bg2)" onerror="this.style.display=\'none\'">';
+    h += '<div style="padding:16px">';
+    h += '<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap"><span class="pill ok">' + (p.src || 'Built-in') + '</span>';
+    if (p.likes) h += '<span class="pill"><i class="fas fa-heart" style="color:var(--danger);font-size:8px"></i> ' + p.likes + '</span>';
+    if (p.model) h += '<span class="pill">' + esc(p.model) + '</span>';
+    h += '</div>';
+    // Prompt
+    h += '<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;font-weight:700">Prompt</span><button onclick="cp(findP(\'' + id + '\').prompt)" class="btn btn2" style="padding:4px 10px;font-size:10px"><i class="fas fa-copy"></i> Copy</button></div>';
+    h += '<div class="pbox">' + esc(p.prompt) + '</div></div>';
+    // Neg
+    if (p.neg) {
+        h += '<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;font-weight:700">Negative</span><button onclick="cp(findP(\'' + id + '\').neg)" class="btn btn2" style="padding:4px 10px;font-size:10px"><i class="fas fa-copy"></i> Copy</button></div>';
+        h += '<div class="pbox" style="border-color:rgba(244,63,94,.2);background:rgba(244,63,94,.04)">' + esc(p.neg) + '</div></div>';
+    }
+    // Params
+    if (p.model || p.steps || p.cfg || p.sampler) {
+        h += '<div style="margin-bottom:18px"><span style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Parameters</span><div style="display:flex;flex-wrap:wrap;gap:5px">';
+        if (p.model) h += '<span class="tag"><i class="fas fa-cube" style="color:var(--accent);font-size:9px"></i> ' + esc(p.model) + '</span>';
+        if (p.steps) h += '<span class="tag"><i class="fas fa-shoe-prints" style="color:var(--accent2);font-size:9px"></i> ' + p.steps + '</span>';
+        if (p.cfg) h += '<span class="tag"><i class="fas fa-sliders" style="color:var(--accent3);font-size:9px"></i> CFG ' + p.cfg + '</span>';
+        if (p.sampler) h += '<span class="tag"><i class="fas fa-shuffle" style="color:#06b6d4;font-size:9px"></i> ' + esc(p.sampler) + '</span>';
+        if (p.seed) h += '<span class="tag"><i class="fas fa-seedling" style="color:#a3e635;font-size:9px"></i> ' + p.seed + '</span>';
+        h += '</div></div>';
+    }
+    // Tags
+    if (p.tags && p.tags.length) {
+        h += '<div style="margin-bottom:18px"><span style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Tags</span><div style="display:flex;flex-wrap:wrap;gap:5px">';
+        p.tags.forEach(function(t) { h += '<span class="tag">#' + esc(typeof t === 'string' ? t : t.name || '') + '</span>'; });
+        h += '</div></div>';
+    }
+    h += '<div style="display:flex;gap:8px;margin-top:20px"><button onclick="cp(findP(\'' + id + '\').prompt)" class="btn btn1" style="flex:1"><i class="fas fa-copy"></i> Copy Prompt</button><button onclick="sv(\'' + id + '\')" class="btn btn2" style="flex:1"><i class="fas fa-bookmark"></i> ' + (saved ? 'Unsave' : 'Save') + '</button></div>';
+    h += '</div>';
+    o.innerHTML = h;
+    o.classList.add('show');
+}
+function closeDet() { document.getElementById('detOv').classList.remove('show'); }
+
+// ===== SOURCE OVERLAY =====
+function showSrc() {
+    var defs = [
+        { k: 'civitai', n: 'Civitai', i: 'fa-fire', c: '#06d6a0' },
+        { k: 'lexica', n: 'Lexica', i: 'fa-search', c: '#7c3aed' },
+        { k: 'meigen', n: 'Meigen AI', i: 'fa-language', c: '#f59e0b' },
+        { k: 'promptseen', n: 'PromptSeen', i: 'fa-eye', c: '#06b6d4' },
+        { k: 'geminiprompt', n: 'GeminiPrompt', i: 'fa-robot', c: '#8b5cf6' },
+        { k: 'promptsnap', n: 'PromptSnap', i: 'fa-bolt', c: '#ef4444' },
+        { k: 'github', n: 'GitHub', i: 'fa-code-branch', c: '#06b6d4' },
+        { k: 'builtin', n: 'Built-in', i: 'fa-book', c: '#ec4899' }
+    ];
+    var h = '<div class="ohdr"><button class="ibtn" onclick="closeSrc()"><i class="fas fa-arrow-left"></i></button><span style="font-size:14px;font-weight:700">Data Sources</span><div></div></div>';
+    h += '<div style="padding:14px">';
+    // Status pills
+    h += '<div style="display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap">';
+    for (var k in ST) { var lbl = k === 'meigen' ? 'Meigen' : k === 'builtin' ? 'Built-in' : k.charAt(0).toUpperCase() + k.slice(1); h += '<span class="pill ' + ST[k] + '"><span class="dot"></span>' + lbl + '</span>'; }
+    h += '</div>';
+    // Cards
+    h += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">';
+    defs.forEach(function(s) {
+        h += '<div style="padding:12px;border-radius:12px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;gap:12px">';
+        h += '<div style="width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:' + s.c + '18;color:' + s.c + ';flex-shrink:0"><i class="fas ' + s.i + '"></i></div>';
+        h += '<div style="flex:1"><div style="font-weight:700;font-size:13px">' + s.n + '</div></div>';
+        h += '<div style="font-size:20px;font-weight:800;color:' + (ST[s.k] === 'ok' ? s.c : 'var(--muted)') + '">' + (SC[s.k] || 0) + '</div></div>';
     });
+    h += '</div>';
+    // Log
+    h += '<div style="margin-bottom:14px"><p style="font-size:12px;font-weight:700;margin-bottom:8px">Fetch Log</p>';
+    h += '<div style="max-height:220px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px">';
+    if (LG.length) {
+        LG.slice(0, 25).forEach(function(l) {
+            var cls = l.t === 'g' ? 'g' : l.t === 'r' ? 'r' : 'y';
+            h += '<div class="log"><span class="' + cls + '">[' + (l.t === 'g' ? 'OK' : l.t === 'r' ? 'ERR' : '...') + ']</span> <span class="d">' + l.ts + '</span> ' + esc(l.m) + '</div>';
+        });
+    } else {
+        h += '<div style="font-size:10px;color:var(--muted);padding:6px">Waiting...</div>';
+    }
+    h += '</div></div>';
+    // Info
+    h += '<div style="padding:10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)">';
+    h += '<p style="font-size:10px;color:var(--muted);line-height:1.6"><i class="fas fa-circle-info" style="color:var(--accent)"></i> Total: <strong style="color:var(--text)">' + P.length + '</strong> prompts. Built-in always works. External sources depend on CORS proxies.</p></div>';
+    h += '</div>';
+    document.getElementById('srcOv').innerHTML = h;
+    document.getElementById('srcOv').classList.add('show');
+}
+function closeSrc() { document.getElementById('srcOv').classList.remove('show'); }
+
+function doRefresh() {
+    var icon = document.getElementById('ricon');
+    icon.style.animation = 'spin .8s linear infinite';
+    LG = []; ST = {};
+    P = builtIn.slice();
+    countSrc(); updHdr(); draw();
+    fetchExternal();
+    setTimeout(function() { icon.style.animation = ''; }, 3000);
+    toast('Refreshing...');
 }
 
-function dedupe(){
-    var seen={};S.prompts=S.prompts.filter(function(p){var k=p.prompt.substring(0,60).toLowerCase().trim();if(seen[k])return false;seen[k]=true;return true});
-    S.prompts.sort(function(a,b){return(b.likes||0)-(a.likes||0)});
-}
+// ===== AMBIENT =====
+(function() {
+    var c = document.createElement('div');
+    c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden';
+    document.body.insertBefore(c, document.body.firstChild);
+    ['rgba(6,214,160,.03)', 'rgba(124,58,237,.03)', 'rgba(6,182,212,.025)'].forEach(function(col, i) {
+        var o = document.createElement('div');
+        var sz = 180 + Math.random() * 200;
+        o.style.cssText = 'position:absolute;width:' + sz + 'px;height:' + sz + 'px;border-radius:50%;background:' + col + ';filter:blur(60px);left:' + (Math.random() * 100) + '%;top:' + (Math.random() * 100) + '%;animation:float ' + (5 + Math.random() * 3) + 's ease-in-out infinite;animation-delay:' + (i * 1.5) + 's';
+        c.appendChild(o);
+    });
+})();
 
-function updateHdr(){
-    var el=document.getElementById('hdrSub');
-    var ok=0;for(var k in S.srcStatus){if(S.srcStatus[k]==='ok'||S.srcStatus[k]==='load')ok++}
-    var loading=false;for(var k in S.srcStatus){if(S.srcStatus[k]==='load'){loading=true;break}}
-    if(loading)el.textContent=S.prompts.length+' prompts, loading more...';
-    else el.textContent=S.prompts.length+' prompts from '+(ok||1)+' sources';
-}
+// ===== SPIN KEYFRAME (for refresh) =====
+var ss = document.createElement('style');
+ss.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(ss);
 
-// ============ TOAST / SAVE / COPY ============
-function toast(msg,icon){icon=icon||'fa-check';var c=document.getElementById('toasts');var t=document.createElement('div');t.className='toast';t.innerHTML='<i class="fas '+icon+'" style="color:var(--accent)"></i> '+msg;c.appendChild(t);setTimeout(function(){t.remove()},2500)}
-function isSaved(id){return S.saved.some(function(p){return p.id===id})}
-function toggleSave(p){if(!p)return;if(isSaved(p.id)){S.saved=S.saved.filter(function(x){return x.id!==p.id});toast('Removed','fa-bookmark')}else{S.saved.unshift(Object.assign({},p));toast('Saved!','fa-bookmark')}localStorage.setItem('pv_s',JSON.stringify(S.saved));document.getElementById('saveDot').style.display=S.saved.length?'block':'none';render()}
-function copyPrompt(text){if(navigator.clipboard){navigator.clipboard.writeText(text).then(function(){toast('Copied!','fa-copy')}).catch(function(){fCopy(text)})}else{fCopy(text)}}
-function fCopy(t){var el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);toast('Copied!','fa-copy')}
-function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
-
-// ============ DETAIL MODAL ============
-function openDetail(p){if(!p)return;var m=document.getElementById('detailModal');var sv=isSaved(p.id);var eid=p.id.replace(/'/g,'\\');
-document.getElementById('detailBody').innerHTML='<div class="modal-hdr"><button onclick="closeDetail()" class="hdr-btn"><i class="fas fa-arrow-left"></i></button><div style="display:flex;gap:6px"><button onclick="toggleSave(findP(\''+eid+'\'))" class="hdr-btn"><i class="fas fa-bookmark" style="color:'+(sv?'var(--accent3)':'var(--muted)')+'"></i></button><button onclick="shareP(\''+eid+'\')" class="hdr-btn"><i class="fas fa-share-nodes"></i></button></div></div>'+(p.img?'<img src="'+p.img+'" class="modal-img" onerror="this.style.display=\'none\'" loading="lazy">':'')+'<div style="padding:16px"><div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap"><span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:7px;background:rgba(6,214,160,.12);color:var(--accent);border:1px solid rgba(6,214,160,.25)">'+(p.src||'Built-in')+'</span>'+(p.likes?'<span style="font-size:10px;color:var(--muted)"><i class="fas fa-heart" style="color:var(--danger)"></i> '+p.likes+'</span>':'')+(p.model&&p.model!=='Unknown'?'<span style="font-size:10px;color:var(--muted)">'+esc(p.model)+'</span>':'')+'</div><div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700">Prompt</span><button onclick="copyPrompt(findP(\''+eid+'\').prompt)" class="btn btn-s btn-sm"><i class="fas fa-copy"></i> Copy</button></div><div class="prompt-box">'+esc(p.prompt)+'</div></div>'+(p.neg?'<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;font-weight:700">Negative Prompt</span><button onclick="copyPrompt(findP(\''+eid+'\').neg)" class="btn btn-s btn-sm"><i class="fas fa-copy"></i> Copy</button></div><div class="prompt-box" style="border-color:rgba(244,63,94,.2);background:rgba(244,63,94,.04)">'+esc(p.neg)+'</div></div>':'')+((p.model||p.steps||p.cfg||p.sampler)?'<div style="margin-bottom:18px"><span style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Parameters</span><div style="display:flex;flex-wrap:wrap;gap:5px">'+(p.model&&p.model!=='Unknown'?'<span class="param-tag"><i class="fas fa-cube" style="color:var(--accent);font-size:9px"></i> '+esc(p.model)+'</span>':'')+(p.steps?'<span class="param-tag"><i class="fas fa-shoe-prints" style="color:var(--accent2);font-size:9px"></i> '+p.steps+'</span>':'')+(p.cfg?'<span class="param-tag"><i class="fas fa-sliders" style="color:var(--accent3);font-size:9px"></i> CFG '+p.cfg+'</span>':'')+(p.sampler?'<span class="param-tag"><i class="fas fa-shuffle" style="color:#06b6d4;font-size:9px"></i> '+esc(p.sampler)+'</span>':'')+(p.seed?'<span class="param-tag"><i class="fas fa-seedling" style="color:#a3e635;font-size:9px"></i> '+p.seed+'</span>':'')+'</div></div>':'')+(p.tags&&p.tags.length?'<div style="margin-bottom:18px"><span style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Tags</span><div style="display:flex;flex-wrap:wrap;gap:5px">'+p.tags.map(function(t){return'<span style="padding:3px 9px;border-radius:7px;font-size:10px;background:var(--bg3);color:var(--muted);border:1px solid var(--border)">#'+esc(typeof t==='string'?t:t.name||'')+'</span>'}).join('')+'</div></div>':'')+'<div style="display:flex;gap:8px;margin-top:20px"><button onclick="copyPrompt(findP(\''+eid+'\').prompt)" class="btn btn-p" style="flex:1"><i class="fas fa-copy"></i> Copy Prompt</button><button onclick="toggleSave(findP(\''+eid+'\'))" class="btn btn-s" style="flex:1"><i class="fas fa-bookmark"></i> '+(sv?'Unsave':'Save')+'</button></div></div>';m.classList.add('open')}
-function closeDetail(){document.getElementById('detailModal').classList.remove('open')}
-function findP(id){return S.prompts.find(function(p){return p.id===id})||S.saved.find(function(p){return p.id===id})}
-function shareP(id){var p=findP(id);if(!p)return;if(navigator.share)navigator.share({title:'AI Prompt',text:p.prompt});else copyPrompt(p.prompt)}
-
-// ============ SOURCE MODAL ============
-function showSources(){
-    var srcDefs=[{key:'civitai',name:'Civitai',icon:'fa-fire',color:'#06d6a0'},{key:'lexica',name:'Lexica',icon:'fa-search',color:'#7c3aed'},{key:'meigen',name:'Meigen AI',icon:'fa-language',color:'#f59e0b'},{key:'promptseen',name:'PromptSeen',icon:'fa-eye',color:'#06b6d4'},{key:'geminiprompt',name:'GeminiPrompt',icon:'fa-robot',color:'#8b5cf6'},{key:'promptsnap',name:'PromptSnap',icon:'fa-bolt',color:'#ef4444'},{key:'github',name:'GitHub',icon:'fa-code-branch',color:'#06b6d4'},{key:'builtin',name:'Built-in',icon:'fa-book',color:'#ec4899'}];
-    var pillsHtml='';for(var k in S.srcStatus){var v=S.srcStatus[k];var label=k==='meigen'?'Meigen':k==='promptseen'?'PromptSeen':k==='geminiprompt'?'GeminiPrompt':k==='promptsnap'?'PromptSnap':k==='builtin'?'Built-in':k.charAt(0).toUpperCase()+k.slice(1);pillsHtml+='<span class="status-pill '+v+'"><span class="status-dot"></span>'+label+'</span>'}
-    var cardsHtml=srcDefs.map(function(s){return'<div class="src-card"><div class="src-icon" style="background:'+s.color+'18;color:'+s.color+'"><i class="fas '+s.icon+'"></i></div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">'+s.name+'</div></div><div class="src-count" style="color:'+(S.srcStatus[s.key]==='ok'?s.color:'var(--muted)')+'">'+(S.srcCounts[s.key]||0)+'</div></div>'}).join('');
-    var logHtml=S.logs.length?S.logs.slice(0,30).map(function(l){return'<div class="log-line"><span class="l'+l.type+'">['+l.type.toUpperCase()+']</span> <span class="ldim">'+l.time+'</span> '+esc(l.msg)+'</div>'}).join(''):'<div style="font-size:10px;color:var(--muted);padding:8px">Waiting for responses...</div>';
-    document.getElementById('srcBody').innerHTML='<div class="modal-hdr"><button onclick="closeSources()" class="hdr-btn"><i class="fas fa-arrow-left"></i></button><span style="font-size:14px;font-weight:700">Data Sources</span><div></div></div><div style="padding:14px"><div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">'+pillsHtml+'</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">'+cardsHtml+'</div><div style="margin-bottom:14px"><p style="font-size:12px;font-weight:700;margin-bottom:8px">Fetch Log</p><div style="max-height:250px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px">'+logHtml+'</div></div><div style="padding:12px;border-radius:11px;background:var(--bg3);border:1px solid var(--border)"><p style="font-size:10px;color:var(--muted);line-height:1.6"><i class="fas fa-circle-info" style="color:var(--accent)"></i> Total: <strong style="color:var(--text)">'+S.prompts.length+'</strong> prompts. Cached 6hrs. Click <i class="fas fa-arrows-rotate"></i> to refresh.</p></div></div>';
-    document.getElementById('srcModal').classList.add('open');
-}
-function closeSources(){document.getElementById('srcModal').classList.remove('open')}
-function refreshAll(){var icon=document.getElementById('refreshIcon');icon.classList.add('fa-spin');localStorage.removeItem(CACHE_KEY);S.logs=[];S.srcStatus={};S.prompts=BUILTIN.map(function(b){return Object.assign({},b)});S.srcCounts={};countSources();updateHdr();render();fetchAllAPIs();setTimeout(function(){icon.classList.remove('fa-spin')},2000);toast('Refreshing all sources...','fa-arrows-rotate')}
-
-// ============ FILTER ============
-function getFiltered(){var l=S.prompts.slice();if(S.src!=='all')l=l.filter(function(p){return(p.src||'').toLowerCase().replace(/[\s.-]/g,'')===S.src});if(S.cat!=='all')l=l.filter(function(p){return p.cat===S.cat});if(S.q){var q=S.q.toLowerCase();l=l.filter(function(p){return p.prompt.toLowerCase().indexOf(q)!==-1||(p.tags||[]).some(function(t){return(typeof t==='string'?t:t.name||'').toLowerCase().indexOf(q)!==-1})})}return l}
-
-// ============ RENDER ============
-function render(){var m=document.getElementById('mc');switch(S.view){case'home':m.innerHTML=renderHome();break;case'explore':m.innerHTML=renderExplore();break;case'search':m.innerHTML=renderSearch();break;case'saved':m.innerHTML=renderSaved();break}}
-
-function renderHome(){var f=getFiltered();var featured=f[0];var trending=f.slice(0,12);var recent=f.slice(12,24);var sr=S.saved.slice(0,4);
-return'<div class="anim-up"><section class="hero-bg" style="padding:20px 14px 16px"><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px">PromptVerse</p><h2 style="font-size:22px;font-weight:800;line-height:1.15;margin-bottom:6px">Discover Perfect<br>AI Image Prompts</h2><p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px">'+S.prompts.length+' prompts from '+(Object.keys(S.srcStatus).filter(function(k){return S.srcStatus[k]==='ok'}).length||1)+' sources</p><div onclick="go(\'search\')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;cursor:pointer"><i class="fas fa-magnifying-glass" style="color:var(--muted);font-size:13px"></i><span style="color:var(--muted);font-size:13px">Search prompts...</span></div></section><div class="status-bar">'+Object.keys(S.srcStatus).map(function(k){var v=S.srcStatus[k];var label=k==='meigen'?'Meigen':k==='promptseen'?'PromptSeen':k==='geminiprompt'?'GeminiPrompt':k==='promptsnap'?'PromptSnap':k==='builtin'?'Built-in':k.charAt(0).toUpperCase()+k.slice(1);return'<span class="status-pill '+v+'"><span class="status-dot"></span>'+label+'</span>'}).join('')+'</div><section style="padding:0 14px 14px"><div class="chips">'+CATS.map(function(c){return'<div class="chip '+(S.cat===c.id?'act':'')+'" onclick="S.cat=\''+c.id+'\';render()"><i class="fas '+c.i+'" style="font-size:9px"></i> '+c.n+'</div>'}).join('')+'</div></section>'+(featured?'<section style="padding:0 14px 16px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">Featured</h3><div onclick="openDetail(findP(\''+featured.id+'\'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer">'+(featured.img?'<img src="'+featured.img+'" style="width:100%;height:180px;object-fit:cover" loading="lazy" onerror="this.style.display=\'none\'">':'')+'<div style="padding:12px"><p style="font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(featured.prompt.substring(0,150))+'</p><div style="display:flex;gap:6px;margin-top:8px"><span style="font-size:9px;color:var(--accent);background:rgba(6,214,160,.1);padding:2px 7px;border-radius:5px">'+featured.src+'</span>'+(featured.model&&featured.model!=='Unknown'?'<span style="font-size:9px;color:var(--muted)">'+esc(featured.model)+'</span>':'')+'</div></div></div></section>':'')+'<section style="padding:0 14px 16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="font-size:14px;font-weight:700">Trending</h3><span onclick="go(\'explore\')" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:600">See all</span></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+(trending.length?trending.map(function(p,i){return cardHTML(p,i)}).join(''):'')+'</div></section>'+(recent.length?'<section style="padding:0 14px 16px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">More</h3><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+recent.map(function(p,i){return cardHTML(p,i+12)}).join('')+'</div><div style="text-align:center;margin-top:16px"><button onclick="go(\'explore\')" class="btn btn-s"><i class="fas fa-compass"></i> Explore All '+f.length+'</button></div></section>':'')+(sr.length?'<section style="padding:0 14px 24px"><h3 style="font-size:14px;font-weight:700;margin-bottom:10px">Saved</h3>'+sr.map(function(p){return'<div onclick="openDetail(S.saved.find(function(x){return x.id===\''+p.id+'\'}))" style="display:flex;gap:10px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:6px">'+(p.img?'<img src="'+p.img+'" style="width:48px;height:48px;border-radius:9px;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">':'<div style="width:48px;height:48px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-wand-magic-sparkles" style="color:var(--muted);font-size:14px"></i></div>')+'<p style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:48px">'+esc(p.prompt.substring(0,55))+'</p></div>'}).join('')+'</section>':'')+'</div>'}
-
-function renderExplore(){var f=getFiltered();var srcChips=['all','civitai','lexica','meigen','promptseen','geminiprompt','promptsnap','github','builtin'].map(function(s){var label=s==='all'?'All':s==='builtin'?'Built-in':s==='meigen'?'Meigen':s==='promptseen'?'PromptSeen':s==='geminiprompt'?'GeminiPrompt':s==='promptsnap'?'PromptSnap':s.charAt(0).toUpperCase()+s.slice(1);return'<div class="chip '+(S.src===s?'act':'')+'" onclick="S.src=\''+s+'\';render()" style="font-size:9px;padding:4px 8px">'+label+'</div>'}).join('');
-return'<div class="anim-up"><section style="padding:14px"><div style="margin-bottom:12px"><h2 style="font-size:16px;font-weight:700">Explore</h2><p style="font-size:10px;color:var(--muted)">'+f.length+' prompts</p></div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">'+srcChips+'</div><div class="chips" style="margin-bottom:8px">'+CATS.map(function(c){return'<div class="chip '+(S.cat===c.id?'act':'')+'" onclick="S.cat=\''+c.id+'\';render()">'+c.n+'</div>'}).join('')+'</div></section><section style="padding:0 14px 24px"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+(f.length?f.map(function(p,i){return cardHTML(p,i)}).join(''):'<div class="empty" style="grid-column:span 2"><i class="fas fa-wand-magic-sparkles"></i><p>No prompts match your filters</p><button onclick="S.src=\'all\';S.cat=\'all\';render()" class="btn btn-p" style="margin-top:10px;font-size:11px">Clear Filters</button></div>')+'</div></section></div>'}
-
-function renderSearch(){return'<div class="anim-up"><section style="padding:14px"><h2 style="font-size:16px;font-weight:700;margin-bottom:12px">Search</h2><div class="search-box" style="margin-bottom:10px"><i class="fas fa-magnifying-glass ico"></i><input type="text" id="searchIn" placeholder="Search prompts..." value="'+esc(S.q)+'" onkeydown="if(event.key===\'Enter\')doSearch()"></div><button onclick="doSearch()" class="btn btn-p" style="width:100%"><i class="fas fa-magnifying-glass"></i> Search</button></section><section style="padding:0 14px">'+(S.q?'<p style="font-size:11px;color:var(--muted);margin-bottom:10px">'+getFiltered().length+' results for "'+esc(S.q)+'"</p><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px">'+(getFiltered().length?getFiltered().slice(0,30).map(function(p,i){return cardHTML(p,i)}).join(''):'<div class="empty" style="grid-column:span 2"><i class="fas fa-magnifying-glass"></i><p>No results</p></div>')+'</div>':'<p style="font-size:12px;font-weight:600;margin-bottom:10px">Popular Searches</p><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:20px">'+['anime girl','landscape','cyberpunk','portrait','fantasy','dragon','space','robot','sunset','underwater','steampunk','forest','castle','neon city','cat warrior'].map(function(q){return'<div class="chip" onclick="S.q=\''+q+'\';doSearch()">'+q+'</div>'}).join('')+'</div>')+'</section></div>'}
-
-function renderSaved(){return'<div class="anim-up"><section style="padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><h2 style="font-size:16px;font-weight:700">Saved</h2><p style="font-size:10px;color:var(--muted)">'+S.saved.length+' saved</p></div>'+(S.saved.length?'<button onclick="if(confirm(\'Clear all?\')){S.saved=[];localStorage.setItem(\'pv_s\',\'[]\');document.getElementById(\'saveDot\').style.display=\'none\';render();toast(\'Cleared\',\'fa-trash\')}" class="btn btn-s btn-sm" style="color:var(--danger);border-color:rgba(244,63,94,.3)"><i class="fas fa-trash"></i></button>':'')+'</div></section><section style="padding:0 14px 24px">'+(S.saved.length?S.saved.map(function(p,i){return'<div onclick="openDetail(S.saved['+i+'])" style="display:flex;gap:10px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:6px">'+(p.img?'<img src="'+p.img+'" style="width:50px;height:50px;border-radius:9px;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">':'<div style="width:50px;height:50px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-wand-magic-sparkles" style="color:var(--muted)"></i></div>')+'<div style="flex:1;min-width:0"><p style="font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5">'+esc(p.prompt.substring(0,120))+'</p><span style="font-size:9px;color:var(--accent)">'+(p.src||'Built-in')+'</span></div><button onclick="event.stopPropagation();toggleSave(S.saved['+i+'])" style="background:none;border:none;color:var(--accent3);cursor:pointer;font-size:13px;padding:4px;align-self:flex-start"><i class="fas fa-bookmark"></i></button></div>'}).join(''):'<div class="empty"><i class="fas fa-bookmark"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No saved prompts</p><button onclick="go(\'explore\')" class="btn btn-p" style="margin-top:14px;font-size:11px"><i class="fas fa-compass"></i> Explore</button></div>')+'</section></div>'}
-
-function cardHTML(p,idx){var sv=isSaved(p.id);var hasImg=p.img&&!S.imgErr[p.id];
-return'<div class="card anim-up" style="animation-delay:'+Math.min(idx*40,500)+'ms" onclick="openDetail(findP(\''+p.id.replace(/'/g,'\\')+'\'))">'+(hasImg?'<div style="position:relative;overflow:hidden"><img src="'+p.img+'" class="card-img" loading="lazy" onerror="this.style.display=\'none\';S.imgErr[\''+p.id+'\']=true;this.nextElementSibling.style.display=\'flex\'"><div style="display:none;aspect-ratio:1/1;background:var(--bg3);align-items:center;justify-content:center"><i class="fas fa-image" style="color:var(--muted);font-size:20px"></i></div><div class="card-ov"><p>'+esc(p.prompt.substring(0,100))+'</p></div></div>':'<div style="aspect-ratio:1/1;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;padding:10px"><i class="fas fa-wand-magic-sparkles" style="font-size:24px;opacity:.15;position:absolute"></i><p style="font-size:10px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden;position:relative">'+esc(p.prompt.substring(0,250))+'</p></div>')+'<div class="card-foot"><span class="card-src">'+(p.src||'Built-in')+'</span><button onclick="event.stopPropagation();toggleSave(findP(\''+p.id.replace(/'/g,'\\')+'\'))" class="card-save '+(sv?'saved':'')+'" style="color:'+(sv?'var(--accent3)':'var(--muted)')+'"><i class="fas fa-bookmark"></i></button></div></div>'}
-
-// ============ NAV ============
-function go(view){S.view=view;document.querySelectorAll('.bnav-item').forEach(function(el){el.classList.toggle('act',el.dataset.v===view)});render();document.getElementById('mc').scrollTop=0}
-function doSearch(){var inp=document.getElementById('searchIn');S.q=inp?inp.value.trim():S.q;render()}
-
-// ============ AMBIENT ============
-(function(){var c=document.createElement('div');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden';document.body.insertBefore(c,document.body.firstChild);['rgba(6,214,160,.03)','rgba(124,58,237,.03)','rgba(6,182,212,.025)'].forEach(function(col,i){var o=document.createElement('div');var sz=200+Math.random()*250;o.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+col+';filter:blur(70px);left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;animation:float '+(5+Math.random()*4)+'s ease-in-out infinite;animation-delay:'+(i*1.5)+'s';c.appendChild(o)})})();
-
-// ============ INIT ============
-document.getElementById('saveDot').style.display=S.saved.length?'block':'none';
-loadAllSources(false);
+// ===== START =====
+initApp();
 </script>
 </body>
 </html>
