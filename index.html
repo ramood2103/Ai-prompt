@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PromptVerse — AI Prompt Browser</title>
+    <meta name="theme-color" content="#0b0b12">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'space': ['Space Grotesk', 'sans-serif'] },
+                    colors: {
+                        dark: { 900: '#0b0b12', 800: '#111120', 700: '#181830', 600: '#1f1f40', 500: '#2a2a50' },
+                        accent: { DEFAULT: '#06d6a0', light: '#34efbf', dark: '#04a87e' },
+                        violet: { DEFAULT: '#7c3aed', light: '#a78bfa' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg: #0b0b12;
+            --bg2: #111120;
+            --bg3: #181830;
+            --bg4: #1f1f40;
+            --accent: #06d6a0;
+            --accent2: #7c3aed;
+            --text: #f0f0f5;
+            --muted: #7a7a9a;
+            --border: #2a2a4a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { overflow: hidden; height: 100%; }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* App shell */
+        .app-shell {
+            display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh;
+            max-width: 480px; margin: 0 auto;
+            position: relative; overflow: hidden;
+        }
+
+        /* Header */
+        .app-header {
+            background: rgba(11,11,18,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(42,42,74,0.4);
+            z-index: 50;
+            padding: 12px 16px;
+            flex-shrink: 0;
+        }
+
+        /* Main content */
+        .app-content {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Bottom nav */
+        .bottom-nav {
+            background: rgba(11,11,18,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(42,42,74,0.4);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 8px 0 env(safe-area-inset-bottom, 8px);
+            flex-shrink: 0; z-index: 50;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 6px 16px; border-radius: 12px; cursor: pointer;
+            transition: all 0.25s ease; color: var(--muted);
+            font-size: 10px; font-weight: 500;
+        }
+        .nav-item i { font-size: 20px; transition: transform 0.25s ease; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active i { transform: scale(1.15); }
+        .nav-item:hover { color: var(--accent); }
+
+        /* Prompt cards */
+        .prompt-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .prompt-card:hover { border-color: rgba(6,214,160,0.3); transform: translateY(-2px); }
+        .prompt-card:active { transform: scale(0.97); }
+
+        .prompt-card .card-img {
+            width: 100%; aspect-ratio: 1/1;
+            object-fit: cover; display: block;
+            background: var(--bg3);
+            transition: opacity 0.4s ease;
+        }
+        .prompt-card .card-img.loaded {  }
+        .prompt-card .card-img:not([src]) { opacity: 0; }
+
+        .card-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            padding: 40px 10px 10px;
+        }
+
+        .card-source-badge {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(6,214,160,0.2); color: var(--accent);
+            font-size: 9px; font-weight: 600; padding: 3px 8px;
+            border-radius: 6px; border: 1px solid rgba(6,214,160,0.3);
+        }
+
+        /* Category chips */
+        .chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+            background: var(--bg3); color: var(--muted);
+            border: 1px solid transparent;
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .chip:hover { border-color: var(--border); color: var(--text); }
+        .chip.active {
+            background: rgba(6,214,160,0.15); color: var(--accent);
+            border-color: rgba(6,214,160,0.4);
+        }
+
+        /* Detail modal */
+        .detail-modal {
+            position: fixed; inset: 0; z-index: 100;
+            background: var(--bg);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 480px; margin: 0 auto;
+            overflow-y: auto; overflow-x: hidden;
+        }
+        .detail-modal.open { transform: translateY(0); }
+
+        .detail-img {
+            width: 100%; max-height: 400px;
+            object-fit: contain; background: var(--bg2);
+        }
+
+        .prompt-text-box {
+            background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px;
+            font-size: 13px; line-height: 1.7;
+            color: #c8c8e0; position: relative;
+            word-break: break-word;
+        }
+
+        .param-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 8px;
+            background: var(--bg3); border: 1px solid var(--border);
+            font-size: 11px; color: var(--muted);
+        }
+
+        /* Action buttons */
+        .action-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px 18px; border-radius: 12px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            border: none; outline: none;
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .action-btn.primary {
+            background: var(--accent); color: #0b0b12;
+        }
+        .action-btn.primary:hover { background: var(--accent); filter: brightness(1.1); }
+        .action-btn.secondary {
+            background: var(--bg3); color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .action-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Toast */
+        .toast-container {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            z-index: 200; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .toast {
+            background: var(--bg4); color: var(--text);
+            padding: 10px 20px; border-radius: 12px;
+            font-size: 13px; font-weight: 500;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Source selector */
+        .source-tab {
+            padding: 8px 16px; border-radius: 10px;
+            font-size: 12px; font-weight: 600;
+            background: transparent; color: var(--muted);
+            cursor: pointer; transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .source-tab.active {
+            background: rgba(6,214,160,0.12); color: var(--accent);
+            border-color: rgba(6,214,160,0.3);
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 12px;
+        }
+
+        /* Glow effects */
+        .glow-accent {
+            box-shadow: 0 0 30px rgba(6,214,160,0.15), 0 0 60px rgba(6,214,160,0.05);
+        }
+
+        /* Animations */
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            80%, 100% { transform: scale(1.3); opacity: 0; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes bgShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .animate-fade { animation: fadeIn 0.4s ease; }
+        .animate-slide { animation: slideUp 0.5s ease; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+
+        /* Hero gradient */
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(6,214,160,0.08), rgba(124,58,237,0.08), rgba(6,214,160,0.04));
+            background-size: 300% 300%;
+            animation: bgShift 8s ease infinite;
+        }
+
+        /* Search input */
+        .search-input {
+            width: 100%; padding: 12px 16px 12px 42px;
+            background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 14px; color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px; outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-input::placeholder { color: var(--muted); }
+
+        /* Responsive - wider screens */
+        @media (min-width: 481px) {
+            .app-shell {
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty state */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 60px 20px;
+            text-align: center; color: var(--muted);
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+
+        /* Save bookmark animation */
+        .bookmark-btn.saved { color: #f59e0b !important; }
+        .bookmark-btn.saved i { animation: pulse-ring 0.4s ease; }
+
+        /* Image loading placeholder */
+        .img-placeholder {
+            background: var(--bg3);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted); font-size: 24px;
+        }
+
+        /* Notification dot */
+        .notif-dot {
+            width: 6px; height: 6px; background: var(--accent);
+            border-radius: 50%; position: absolute;
+            top: 4px; right: 12px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell" id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent), var(--accent2));">
+                        <i class="fas fa-wand-magic-sparkles text-sm" style="color: var(--bg);"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-bold tracking-tight" style="color: var(--text);">PromptVerse</h1>
+                        <p class="text-xs" style="color: var(--muted);">AI Prompt Browser</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="showSourceSelector()" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer;" aria-label="Source selector">
+                        <i class="fas fa-database text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-content" id="mainContent">
+            <!-- Views rendered by JS -->
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+            <div class="nav-item active" data-view="home" onclick="switchView('home')" role="button" tabindex="0" aria-label="Home">
+                <i class="fas fa-house"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" data-view="explore" onclick="switchView('explore')" role="button" tabindex="0" aria-label="Explore">
+                <i class="fas fa-compass"></i>
+                <span>Explore</span>
+            </div>
+            <div class="nav-item" data-view="search" onclick="switchView('search')" role="button" tabindex="0" aria-label="Search">
+                <i class="fas fa-magnifying-glass"></i>
+                <span>Search</span>
+            </div>
+            <div class="nav-item" data-view="saved" onclick="switchView('saved')" role="button" tabindex="0" aria-label="Saved">
+                <i class="fas fa-bookmark"></i>
+                <span>Saved</span>
+                <div class="notif-dot" id="savedNotif" style="display:none;"></div>
+            </div>
+        </nav>
+
+        <!-- Detail Modal -->
+        <div class="detail-modal" id="detailModal">
+            <div id="detailContent"></div>
+        </div>
+
+        <!-- Source Selector Modal -->
+        <div class="detail-modal" id="sourceModal" style="z-index: 110;">
+            <div class="p-5">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold">Data Sources</h2>
+                    <button onclick="closeSourceSelector()" class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer;">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="space-y-3" id="sourceList"></div>
+                <div class="mt-6 p-4 rounded-xl" style="background: var(--bg3); border: 1px solid var(--border);">
+                    <p class="text-xs" style="color: var(--muted); line-height: 1.6;">
+                        <i class="fas fa-circle-info" style="color: var(--accent);"></i>
+                        PromptVerse fetches prompts from free public APIs and websites. If a source is unreachable, it falls back to the built-in library. Data is cached for performance.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <script>
+    // ==========================================
+    // APP STATE
+    // ==========================================
+    const State = {
+        currentView: 'home',
+        currentSource: 'civitai',
+        currentCategory: 'all',
+        prompts: [],
+        savedPrompts: JSON.parse(localStorage.getItem('pv_saved') || '[]'),
+        searchQuery: '',
+        currentPage: 1,
+        hasMore: true,
+        loading: false,
+        sortBy: 'trending',
+        imageErrors: new Set()
+    };
+
+    // ==========================================
+    // BUILT-IN PROMPT LIBRARY (always available)
+    // ==========================================
+    const BUILTIN_PROMPTS = [
+        {
+            id:'b1', prompt:'A serene Japanese garden at twilight, stone lanterns glowing warmly, cherry blossom petals drifting across a koi pond, mist rising from the water, ultra detailed, cinematic lighting, 8k resolution',
+            negativePrompt:'blurry, low quality, distorted, overexposed', category:'Landscape', tags:['japanese','garden','twilight','cherry blossom'],
+            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b2', prompt:'Cyberpunk street vendor selling neon noodles, rain-slicked pavement reflecting holographic signs, steam rising from food stall, crowded alleyway, blade runner aesthetic, volumetric lighting, extremely detailed',
+            negativePrompt:'ugly, deformed, blurry, low resolution', category:'Sci-Fi', tags:['cyberpunk','neon','rain','street'],
+            model:'SDXL', steps:35, cfgScale:8, sampler:'Euler a', source:'Built-in'
+        },
+        {
+            id:'b3', prompt:'Portrait of an ethereal forest spirit, translucent glowing skin, hair made of moonlight and fireflies, crown of crystal antlers, dark enchanted forest background, fantasy art, detailed face, magical atmosphere',
+            negativePrompt:'ugly, deformed face, extra limbs, bad anatomy', category:'Fantasy', tags:['spirit','forest','ethereal','portrait'],
+            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ SDE Karras', source:'Built-in'
+        },
+        {
+            id:'b4', prompt:'Macro photography of morning dewdrops on a spider web, golden hour sunlight refracting through each drop creating tiny rainbows, bokeh background of wildflower meadow, hyperrealistic, 8k',
+            negativePrompt:'blurry, grainy, overexposed, flat', category:'Photography', tags:['macro','dew','golden hour','nature'],
+            model:'SDXL', steps:25, cfgScale:6, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b5', prompt:'Massive floating crystal city above the clouds, bridges of pure light connecting towers, airships docking at crystal platforms, sunset painting the sky in amber and violet, epic scale, concept art',
+            negativePrompt:'low quality, pixelated, ugly, distorted', category:'Fantasy', tags:['crystal','city','floating','epic'],
+            model:'SDXL', steps:32, cfgScale:7.5, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b6', prompt:'Steampunk clockwork owl perched on a brass gear, intricate mechanical parts visible through glass panels, copper and gold tones, dark moody background, detailed mechanical illustration, vintage aesthetic',
+            negativePrompt:'modern, plastic, blurry, simple', category:'3D Render', tags:['steampunk','owl','mechanical','brass'],
+            model:'SDXL', steps:30, cfgScale:7, sampler:'Euler a', source:'Built-in'
+        },
+        {
+            id:'b7', prompt:'Underwater ancient temple ruins overgrown with bioluminescent coral, schools of tropical fish swimming through marble columns, sunbeams filtering through clear water, mystical atmosphere, photorealistic',
+            negativePrompt:'surface, dry, blurry, low detail', category:'Landscape', tags:['underwater','temple','bioluminescent','coral'],
+            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b8', prompt:'Minimalist architectural photography, concrete staircase with dramatic shadows, geometric patterns, black and white with one red accent element, clean composition, cinematic perspective',
+            negativePrompt:'cluttered, colorful, messy, distorted', category:'Minimalist', tags:['architecture','minimalist','shadows','geometric'],
+            model:'SDXL', steps:22, cfgScale:6, sampler:'DPM++ 2M', source:'Built-in'
+        },
+        {
+            id:'b9', prompt:'Anime girl warrior standing on a cliff edge, flowing white hair caught in the wind, ornate samurai armor with cherry blossom engravings, katana drawn, dramatic sunset, studio ghibli inspired, cel shaded',
+            negativePrompt:'realistic, photographic, western style, deformed', category:'Anime', tags:['warrior','sunset','armor','anime'],
+            model:'Anything V5', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b10', prompt:'Cozy cabin interior during a snowstorm, roaring fireplace casting warm orange light, stacks of old books, steaming mug of cocoa on wooden table, fluffy cat sleeping on rug, hygge aesthetic, warm tones',
+            negativePrompt:'cold colors, modern, sterile, empty', category:'Photography', tags:['cabin','cozy','fireplace','winter'],
+            model:'SDXL', steps:26, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b11', prompt:'Abstract fluid art, molten gold and deep ocean blue swirling together, marble texture, high contrast, organic flowing shapes, luxurious feel, 4k texture, metallic sheen',
+            negativePrompt:'figurative, realistic, messy, low quality', category:'Abstract', tags:['fluid','gold','marble','abstract'],
+            model:'SDXL', steps:25, cfgScale:8, sampler:'DPM++ SDE', source:'Built-in'
+        },
+        {
+            id:'b12', prompt:'Astronaut floating in deep space surrounded by a nebula, helmet visor reflecting distant galaxies, tether line trailing into darkness, photorealistic space suit, cosmic color palette, cinematic composition',
+            negativePrompt:'cartoon, low detail, earth, indoor', category:'Sci-Fi', tags:['astronaut','space','nebula','cosmic'],
+            model:'SDXL', steps:35, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b13', prompt:'Dragon made entirely of crystalline ice, perched atop a frozen mountain peak, aurora borealis in the sky, ice crystals refracting rainbow light, majestic and powerful, fantasy illustration, ultra detailed scales',
+            negativePrompt:'fire, warm colors, low detail, cartoonish', category:'Fantasy', tags:['dragon','ice','aurora','crystal'],
+            model:'SDXL', steps:32, cfgScale:7.5, sampler:'DPM++ SDE Karras', source:'Built-in'
+        },
+        {
+            id:'b14', prompt:'Vintage vinyl record store interior, warm amber lighting, floor-to-ceiling record bins, analog equipment, 1970s aesthetic, film grain, nostalgic mood, documentary photography style',
+            negativePrompt:'modern, digital, clean, bright', category:'Photography', tags:['vintage','records','nostalgic','1970s'],
+            model:'SDXL', steps:24, cfgScale:6.5, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b15', prompt:'Biomechanical humanoid, half organic half machine, exposed circuitry merging with muscle fiber, glowing neural pathways, dark laboratory setting, HR Giger inspired, intricate detail, dark atmosphere',
+            negativePrompt:'cute, bright, cartoon, simple', category:'Sci-Fi', tags:['biomechanical','cyborg','giger','dark'],
+            model:'SDXL', steps:35, cfgScale:8, sampler:'DPM++ SDE Karras', source:'Built-in'
+        },
+        {
+            id:'b16', prompt:'Enchanted library with books flying through the air, magical golden sparkles, spiral staircases reaching into clouds, ancient tome open on a reading stand with glowing runes, warm candlelight, fantasy concept art',
+            negativePrompt:'modern library, empty, dark, mundane', category:'Fantasy', tags:['library','magic','books','enchanted'],
+            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b17', prompt:'Product photography of a luxury perfume bottle, dramatic side lighting, liquid amber inside crystal bottle, mist and golden particles in the air, dark reflective surface, commercial quality, ultra sharp',
+            negativePrompt:'amateur, blurry, cheap looking, cluttered', category:'Photography', tags:['product','luxury','perfume','commercial'],
+            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b18', prompt:'Post-apocalyptic greenhouse, nature reclaiming a glass dome, vines breaking through steel frames, flowers blooming from rusted cars, sunlight streaming through cracked panels, hopeful atmosphere, concept art',
+            negativePrompt:'pristine, clean, brand new, indoor studio', category:'Concept Art', tags:['post-apocalyptic','nature','greenhouse','reclamation'],
+            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b19', prompt:'Traditional Chinese ink wash painting of mountains emerging from sea of clouds, lone fisherman in small boat below, pine trees clinging to cliffs, minimalist composition, wabi-sabi aesthetic, rice paper texture',
+            negativePrompt:'western style, photorealistic, colorful, busy', category:'Minimalist', tags:['chinese','ink wash','mountains','minimalist'],
+            model:'SDXL', steps:20, cfgScale:5.5, sampler:'Euler a', source:'Built-in'
+        },
+        {
+            id:'b20', prompt:'Alien botanical garden on a distant planet, bioluminescent plants in impossible colors, floating spores, crystal formations growing like trees, two moons in violet sky, otherworldly paradise, scientific illustration style',
+            negativePrompt:'earth plants, human, ordinary, blurry', category:'Sci-Fi', tags:['alien','botanical','bioluminescent','planet'],
+            model:'SDXL', steps:32, cfgScale:7.5, sampler:'DPM++ SDE Karras', source:'Built-in'
+        },
+        {
+            id:'b21', prompt:'Isometric voxel art of a medieval fantasy village, tiny adventurers in the town square, blacksmith forge with glowing embers, windmill turning, flower gardens, cute and colorful, game asset style',
+            negativePrompt:'realistic, dark, gritty, photographic', category:'3D Render', tags:['voxel','isometric','medieval','cute'],
+            model:'SDXL', steps:25, cfgScale:7, sampler:'Euler a', source:'Built-in'
+        },
+        {
+            id:'b22', prompt:'Baroque angel with six wings descending through golden clouds, dramatic chiaroscuro lighting, oil painting style inspired by Caravaggio, ornate halo, flowing robes, divine radiance, masterpiece quality',
+            negativePrompt:'modern, cartoon, anime, simple', category:'Portrait', tags:['angel','baroque','painting','chiaroscuro'],
+            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b23', prompt:'Neon-drenched Tokyo alley at 3am, vending machine glow, rain creating rivers of color on the ground, silhouette of a lone figure with umbrella, reflections everywhere, cyber-noir atmosphere, film still',
+            negativePrompt:'daytime, sunny, clean, empty', category:'Photography', tags:['tokyo','neon','rain','night'],
+            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b24', prompt:'Cute robot tending a rooftop garden, watering can in mechanical hand, small sunflowers in terra cotta pots, city skyline at sunset, warm and wholesome, pixar style 3D render, detailed textures',
+            negativePrompt:'scary, dark, realistic, horror', category:'3D Render', tags:['robot','garden','cute','pixar'],
+            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M', source:'Built-in'
+        },
+        {
+            id:'b25', prompt:'Ancient Norse rune stones in a misty forest clearing, carved symbols faintly glowing blue, ravens perched on top, moss and lichen covered surfaces, cinematic fog, mystical viking atmosphere, golden hour',
+            negativePrompt:'modern, clean, bright, cartoon', category:'Landscape', tags:['norse','runes','mystical','forest'],
+            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b26', prompt:'Art nouveau decorative border with interlocking irises and dragonflies, gold leaf accents on deep emerald background, Alphonse Mucha inspired, elegant line work, ornamental design, vector-like clarity',
+            negativePrompt:'photographic, 3D, rough, messy', category:'Abstract', tags:['art nouveau','decorative','gold','ornamental'],
+            model:'SDXL', steps:24, cfgScale:7, sampler:'Euler a', source:'Built-in'
+        },
+        {
+            id:'b27', prompt:'Deep sea anglerfish with elaborate bioluminescent lure, abyssal plain background with marine snow, otherworldly deep ocean creatures in the distance, dramatic underwater photography, abyssal zone darkness',
+            negativePrompt:'surface, bright, shallow water, cartoon', category:'Photography', tags:['deep sea','bioluminescent','anglerfish','abyss'],
+            model:'SDXL', steps:30, cfgScale:7.5, sampler:'DPM++ 2M Karras', source:'Built-in'
+        },
+        {
+            id:'b28', prompt:'Massive tree of life growing from a tiny island in an endless ocean, roots visible through crystal clear water, golden leaves falling into the sea, birds circling the canopy, surreal fantasy, epic scale',
+            negativePrompt:'realistic, small, ordinary, dark', category:'Fantasy', tags:['tree of life','ocean','surreal','epic'],
+            model:'SDXL', steps:32, cfgScale:7, sampler:'DPM++ SDE Karras', source:'Built-in'
+        },
+        {
+            id:'b29', prompt:'Retro-futuristic space station interior, 1960s vision of the future, curved plastic furniture, bold primary colors, wall screens showing retro graphics, optimism and wonder, vintage sci-fi illustration',
+            negativePrompt:'modern sci-fi, dark, gritty, realistic', category:'Concept Art', tags:['retro-futuristic','space','1960s','vintage'],
+            model:'SDXL', steps:26, cfgScale:7, sampler:'Euler a', source:'Built-in'
+        },
+        {
+            id:'b30', prompt:'Samurai standing in a field of tall grass, armor catching wind, dramatic backlit composition, red sun on horizon, long shadow stretching forward, ink wash meets digital painting, powerful stance, lone warrior',
+            negativePrompt:'modern, casual, bright, cheerful', category:'Portrait', tags:['samurai','dramatic','backlit','warrior'],
+            model:'SDXL', steps:28, cfgScale:7.5, sampler:'DPM++ 2M Karras', source:'Built-in'
+        }
+    ];
+
+    // ==========================================
+    // CATEGORIES
+    // ==========================================
+    const CATEGORIES = [
+        { id:'all', name:'All', icon:'fa-layer-group' },
+        { id:'Landscape', name:'Landscape', icon:'fa-mountain-sun' },
+        { id:'Portrait', name:'Portrait', icon:'fa-user' },
+        { id:'Fantasy', name:'Fantasy', icon:'fa-hat-wizard' },
+        { id:'Sci-Fi', name:'Sci-Fi', icon:'fa-rocket' },
+        { id:'Anime', name:'Anime', icon:'fa-star' },
+        { id:'Photography', name:'Photo', icon:'fa-camera' },
+        { id:'Abstract', name:'Abstract', icon:'fa-shapes' },
+        { id:'3D Render', name:'3D', icon:'fa-cube' },
+        { id:'Concept Art', name:'Concept', icon:'fa-palette' },
+        { id:'Minimalist', name:'Minimal', icon:'fa-minus' }
+    ];
+
+    // ==========================================
+    // CORS PROXY + FETCH UTILITY
+    // ==========================================
+    const PROXY_LIST = [
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+    ];
+
+    async function smartFetch(url, timeout = 12000) {
+        // Try direct fetch first
+        try {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), timeout);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(tid);
+            if (res.ok) {
+                const text = await res.text();
+                try { return JSON.parse(text); } catch { return text; }
+            }
+        } catch(e) { /* CORS or network error, try proxies */ }
+
+        // Try each CORS proxy
+        for (const proxyFn of PROXY_LIST) {
+            try {
+                const proxyUrl = proxyFn(url);
+                const controller = new AbortController();
+                const tid = setTimeout(() => controller.abort(), timeout);
+                const res = await fetch(proxyUrl, { signal: controller.signal });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const text = await res.text();
+                    try { return JSON.parse(text); } catch { return text; }
+                }
+            } catch(e) { continue; }
+        }
+
+        throw new Error('All fetch methods failed for: ' + url);
+    }
+
+    // ==========================================
+    // API SOURCES
+    // ==========================================
+    const SOURCES = {
+        civitai: {
+            name: 'Civitai',
+            icon: 'fa-fire',
+            desc: 'Community AI art platform with prompts & models',
+            color: '#06d6a0',
+            async fetch(page = 1, sort = 'Most Reactions', tag = '') {
+                const params = new URLSearchParams({ limit: 24, page, sort, nsfw: 'false', 'projectId': '' });
+                if (tag && tag !== 'all') params.set('tags', tag);
+                const url = `https://civitai.com/api/v1/images?${params}`;
+                const data = await smartFetch(url);
+                if (!data || !data.items) throw new Error('Invalid Civitai response');
+                return {
+                    items: data.items.filter(i => i.meta && i.meta.prompt).map(i => ({
+                        id: `civ-${i.id}`,
+                        imageUrl: i.url,
+                        prompt: i.meta.prompt || '',
+                        negativePrompt: i.meta.negativePrompt || '',
+                        model: i.meta.Model || 'Unknown',
+                        steps: i.meta.steps || 0,
+                        cfgScale: i.meta.cfgScale || 0,
+                        sampler: i.meta.sampler || '',
+                        seed: i.meta.seed || 0,
+                        tags: i.tags || [],
+                        likes: (i.stats && i.stats.likeCount) || 0,
+                        source: 'Civitai',
+                        width: i.width || 512,
+                        height: i.height || 512
+                    })),
+                    nextPage: data.metadata?.nextPage ? page + 1 : null,
+                    total: data.metadata?.totalItems || 0
+                };
+            }
+        },
+        lexica: {
+            name: 'Lexica',
+            icon: 'fa-search',
+            desc: 'Stable Diffusion search engine with millions of prompts',
+            color: '#7c3aed',
+            async fetch(query = '', page = 1) {
+                const url = query
+                    ? `https://lexica.art/api/v1/search?q=${encodeURIComponent(query)}`
+                    : `https://lexica.art/api/v1/search?q=art`;
+                const data = await smartFetch(url);
+                if (!data || !data.images) throw new Error('Invalid Lexica response');
+                return {
+                    items: data.images.map(i => ({
+                        id: `lex-${i.id}`,
+                        imageUrl: i.srcSmall || i.src,
+                        prompt: i.prompt || '',
+                        negativePrompt: '',
+                        model: 'Stable Diffusion',
+                        steps: 0, cfgScale: 0, sampler: '', seed: i.seed || 0,
+                        tags: [],
+                        likes: 0,
+                        source: 'Lexica',
+                        width: i.width || 512,
+                        height: i.height || 512
+                    })),
+                    nextPage: null,
+                    total: data.images.length
+                };
+            }
+        },
+        meigen: {
+            name: 'Meigen AI',
+            icon: 'fa-language',
+            desc: 'Asian AI prompt library with curated collections',
+            color: '#f59e0b',
+            async fetch(page = 1) {
+                const url = `https://www.meigen.ai/`;
+                const html = await smartFetch(url);
+                if (typeof html !== 'string') throw new Error('Invalid meigen response');
+                // Try to parse prompts from HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const items = [];
+
+                // Try common selectors for prompt content
+                const promptElements = doc.querySelectorAll('[class*="prompt"], [class*="card"], [class*="item"], article, .gallery-item');
+                promptElements.forEach((el, idx) => {
+                    const text = el.textContent.trim();
+                    if (text && text.length > 20 && text.length < 2000) {
+                        const img = el.querySelector('img');
+                        items.push({
+                            id: `mei-${idx}`,
+                            imageUrl: img ? img.src : '',
+                            prompt: text.substring(0, 500),
+                            negativePrompt: '',
+                            model: 'Various',
+                            steps: 0, cfgScale: 0, sampler: '', seed: 0,
+                            tags: [],
+                            likes: 0,
+                            source: 'Meigen AI',
+                            width: 512, height: 512
+                        });
+                    }
+                });
+
+                if (items.length === 0) throw new Error('Could not parse meigen.ai content');
+                return { items, nextPage: null, total: items.length };
+            }
+        },
+        builtin: {
+            name: 'Built-in Library',
+            icon: 'fa-book',
+            desc: 'Curated collection of 30 high-quality prompts, always available',
+            color: '#ec4899',
+            async fetch(page = 1, sort = '', tag = 'all') {
+                let items = [...BUILTIN_PROMPTS];
+                if (tag && tag !== 'all') {
+                    items = items.filter(p => p.category === tag || p.tags.includes(tag));
+                }
+                return { items, nextPage: null, total: items.length };
+            }
+        }
+    };
+
+    // ==========================================
+    // TOAST NOTIFICATIONS
+    // ==========================================
+    function showToast(message, icon = 'fa-check') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas ${icon}" style="color: var(--accent);"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 2600);
+    }
+
+    // ==========================================
+    // SAVE / UNSAVE PROMPTS
+    // ==========================================
+    function isSaved(id) {
+        return State.savedPrompts.some(p => p.id === id);
+    }
+
+    function toggleSave(prompt) {
+        if (isSaved(prompt.id)) {
+            State.savedPrompts = State.savedPrompts.filter(p => p.id !== prompt.id);
+            showToast('Removed from saved', 'fa-bookmark');
+        } else {
+            State.savedPrompts.unshift({...prompt});
+            showToast('Saved to collection', 'fa-bookmark');
+        }
+        localStorage.setItem('pv_saved', JSON.stringify(State.savedPrompts));
+        updateSavedNotif();
+        // Re-render current view
+        if (State.currentView === 'saved') switchView('saved');
+    }
+
+    function updateSavedNotif() {
+        const dot = document.getElementById('savedNotif');
+        dot.style.display = State.savedPrompts.length > 0 ? 'block' : 'none';
+    }
+
+    // ==========================================
+    // COPY TO CLIPBOARD
+    // ==========================================
+    async function copyPrompt(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('Prompt copied to clipboard', 'fa-copy');
+        } catch {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Prompt copied', 'fa-copy');
+        }
+    }
+
+    // ==========================================
+    // DETAIL MODAL
+    // ==========================================
+    function openDetail(prompt) {
+        const modal = document.getElementById('detailModal');
+        const content = document.getElementById('detailContent');
+        const saved = isSaved(prompt.id);
+
+        content.innerHTML = `
+            <div style="position: sticky; top: 0; z-index: 10; background: rgba(11,11,18,0.9); backdrop-filter: blur(16px); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+                <button onclick="closeDetail()" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--text); cursor: pointer;">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="toggleSave(State.prompts.find(p=>p.id==='${prompt.id}') || State.savedPrompts.find(p=>p.id==='${prompt.id}'))" class="bookmark-btn w-9 h-9 rounded-xl flex items-center justify-center ${saved ? 'saved' : ''}" style="background: var(--bg3); border: 1px solid var(--border); color: ${saved ? '#f59e0b' : 'var(--muted)'}; cursor: pointer;" id="detailBookmark">
+                        <i class="fas fa-bookmark text-sm"></i>
+                    </button>
+                    <button onclick="sharePrompt('${prompt.id}')" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer;">
+                        <i class="fas fa-share-nodes text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            ${prompt.imageUrl ? `
+                <div style="background: var(--bg2); display: flex; align-items: center; justify-content: center; min-height: 280px;">
+                    <img src="${prompt.imageUrl}" alt="AI generated image" class="detail-img" onerror="this.style.display='none'" loading="lazy">
+                </div>
+            ` : ''}
+
+            <div style="padding: 20px;">
+                <!-- Source badge -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <span style="background: rgba(6,214,160,0.12); color: var(--accent); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(6,214,160,0.25);">
+                        ${prompt.source || 'Unknown'}
+                    </span>
+                    ${prompt.likes ? `<span style="color: var(--muted); font-size: 12px;"><i class="fas fa-heart" style="color: #f43f5e;"></i> ${prompt.likes}</span>` : ''}
+                </div>
+
+                <!-- Prompt text -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text);">Prompt</span>
+                        <button onclick="copyPrompt(\`${prompt.prompt.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px;">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-text-box">${escapeHtml(prompt.prompt)}</div>
+                </div>
+
+                ${prompt.negativePrompt ? `
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text);">Negative Prompt</span>
+                        <button onclick="copyPrompt(\`${prompt.negativePrompt.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px;">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="prompt-text-box" style="border-color: rgba(244,63,94,0.2); background: rgba(244,63,94,0.05);">${escapeHtml(prompt.negativePrompt)}</div>
+                </div>
+                ` : ''}
+
+                <!-- Parameters -->
+                ${(prompt.model || prompt.steps || prompt.cfgScale || prompt.sampler) ? `
+                <div style="margin-bottom: 20px;">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 10px;">Parameters</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        ${prompt.model ? `<span class="param-tag"><i class="fas fa-cube" style="color: var(--accent); font-size: 10px;"></i> ${escapeHtml(prompt.model)}</span>` : ''}
+                        ${prompt.steps ? `<span class="param-tag"><i class="fas fa-shoe-prints" style="color: var(--accent2); font-size: 10px;"></i> ${prompt.steps} steps</span>` : ''}
+                        ${prompt.cfgScale ? `<span class="param-tag"><i class="fas fa-sliders" style="color: #f59e0b; font-size: 10px;"></i> CFG ${prompt.cfgScale}</span>` : ''}
+                        ${prompt.sampler ? `<span class="param-tag"><i class="fas fa-shuffle" style="color: #06b6d4; font-size: 10px;"></i> ${escapeHtml(prompt.sampler)}</span>` : ''}
+                        ${prompt.seed ? `<span class="param-tag"><i class="fas fa-seedling" style="color: #a3e635; font-size: 10px;"></i> Seed: ${prompt.seed}</span>` : ''}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Tags -->
+                ${prompt.tags && prompt.tags.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 10px;">Tags</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        ${prompt.tags.map(t => `<span style="padding: 4px 10px; border-radius: 8px; font-size: 11px; background: var(--bg3); color: var(--muted); border: 1px solid var(--border);">#${escapeHtml(typeof t === 'string' ? t : t.name || '')}</span>`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Action buttons -->
+                <div style="display: flex; gap: 10px; margin-top: 24px;">
+                    <button onclick="copyPrompt(\`${prompt.prompt.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)" class="action-btn primary" style="flex: 1;">
+                        <i class="fas fa-copy"></i> Copy Full Prompt
+                    </button>
+                    <button onclick="toggleSave(State.prompts.find(p=>p.id==='${prompt.id}') || State.savedPrompts.find(p=>p.id==='${prompt.id}'))" class="action-btn secondary" style="flex: 1;">
+                        <i class="fas fa-bookmark"></i> ${saved ? 'Unsave' : 'Save'}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetail() {
+        document.getElementById('detailModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function sharePrompt(id) {
+        const prompt = State.prompts.find(p => p.id === id) || State.savedPrompts.find(p => p.id === id);
+        if (!prompt) return;
+        if (navigator.share) {
+            navigator.share({ title: 'AI Prompt', text: prompt.prompt });
+        } else {
+            copyPrompt(prompt.prompt);
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ==========================================
+    // SOURCE SELECTOR
+    // ==========================================
+    function showSourceSelector() {
+        const modal = document.getElementById('sourceModal');
+        const list = document.getElementById('sourceList');
+
+        list.innerHTML = Object.entries(SOURCES).map(([key, src]) => `
+            <div onclick="selectSource('${key}')" style="
+                padding: 16px; border-radius: 14px; cursor: pointer;
+                background: ${State.currentSource === key ? 'rgba(6,214,160,0.08)' : 'var(--bg2)'};
+                border: 1px solid ${State.currentSource === key ? 'rgba(6,214,160,0.35)' : 'var(--border)'};
+                transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;
+            ">
+                <div style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${src.color}22; color: ${src.color}; flex-shrink: 0;">
+                    <i class="fas ${src.icon}"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 14px; color: var(--text);">${src.name}</div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">${src.desc}</div>
+                </div>
+                ${State.currentSource === key ? `<i class="fas fa-check-circle" style="color: var(--accent); font-size: 18px;"></i>` : ''}
+            </div>
+        `).join('');
+
+        modal.classList.add('open');
+    }
+
+    function closeSourceSelector() {
+        document.getElementById('sourceModal').classList.remove('open');
+    }
+
+    async function selectSource(key) {
+        State.currentSource = key;
+        State.prompts = [];
+        State.currentPage = 1;
+        State.hasMore = true;
+        closeSourceSelector();
+        showToast(`Switched to ${SOURCES[key].name}`, 'fa-database');
+        await loadPrompts();
+        renderCurrentView();
+    }
+
+    // ==========================================
+    // LOAD PROMPTS FROM SOURCE
+    // ==========================================
+    async function loadPrompts(append = false) {
+        if (State.loading) return;
+        State.loading = true;
+
+        const source = SOURCES[State.currentSource];
+        try {
+            let result;
+            if (State.currentSource === 'civitai') {
+                const sortMap = { trending: 'Most Reactions', newest: 'Newest', most_comments: 'Most Comments' };
+                const sort = sortMap[State.sortBy] || 'Most Reactions';
+                const tag = State.currentCategory !== 'all' ? State.currentCategory : '';
+                result = await source.fetch(State.currentPage, sort, tag);
+            } else if (State.currentSource === 'lexica') {
+                result = await source.fetch(State.searchQuery || 'art', State.currentPage);
+            } else if (State.currentSource === 'meigen') {
+                result = await source.fetch(State.currentPage);
+            } else {
+                result = await source.fetch(State.currentPage, '', State.currentCategory);
+            }
+
+            if (append) {
+                State.prompts = [...State.prompts, ...result.items];
+            } else {
+                State.prompts = result.items;
+            }
+            State.hasMore = result.nextPage !== null;
+        } catch(e) {
+            console.warn('Source fetch failed, falling back to built-in:', e.message);
+            if (!append) {
+                // Fallback to built-in
+                const fallback = await SOURCES.builtin.fetch(1, '', State.currentCategory);
+                State.prompts = fallback.items;
+                State.hasMore = false;
+                if (State.currentSource !== 'builtin') {
+                    showToast('Using built-in library (source unavailable)', 'fa-triangle-exclamation');
+                }
+            }
+        }
+
+        State.loading = false;
+    }
+
+    // ==========================================
+    // RENDER HELPERS
+    // ==========================================
+    function createPromptCard(prompt, index) {
+        const saved = isSaved(prompt.id);
+        const imgSrc = prompt.imageUrl || '';
+        const hasImage = imgSrc && !State.imageErrors.has(prompt.id);
+
+        return `
+            <div class="prompt-card animate-slide" style="animation-delay: ${Math.min(index * 50, 400)}ms;" onclick="openDetail(State.prompts[${State.prompts.indexOf(prompt)}] || State.savedPrompts.find(p=>p.id==='${prompt.id}'))">
+                ${hasImage ? `
+                    <div style="position: relative; overflow: hidden;">
+                        <img src="${imgSrc}" alt="AI art" class="card-img" loading="lazy"
+                            onerror="this.style.display='none'; State.imageErrors.add('${prompt.id}'); this.nextElementSibling.style.display='flex';"
+                        >
+                        <div class="img-placeholder" style="display:none; aspect-ratio: 1/1;">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <div class="card-overlay">
+                            <p style="font-size: 11px; color: rgba(255,255,255,0.9); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                                ${escapeHtml(prompt.prompt.substring(0, 120))}${prompt.prompt.length > 120 ? '...' : ''}
+                            </p>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="img-placeholder" style="aspect-ratio: 1/1; position: relative;">
+                        <i class="fas fa-wand-magic-sparkles" style="font-size: 32px; opacity: 0.2;"></i>
+                        <div class="card-overlay">
+                            <p style="font-size: 11px; color: rgba(255,255,255,0.9); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${escapeHtml(prompt.prompt.substring(0, 200))}${prompt.prompt.length > 200 ? '...' : ''}
+                            </p>
+                        </div>
+                    </div>
+                `}
+                <div style="padding: 10px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 10px; color: var(--muted); background: var(--bg3); padding: 2px 8px; border-radius: 6px;">
+                            ${escapeHtml(prompt.source || 'Built-in')}
+                        </span>
+                        <button class="bookmark-btn ${saved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(State.prompts[${State.prompts.indexOf(prompt)}] || State.savedPrompts.find(p=>p.id==='${prompt.id}'))" style="background: none; border: none; color: ${saved ? '#f59e0b' : 'var(--muted)'}; cursor: pointer; font-size: 14px; padding: 4px;" aria-label="${saved ? 'Unsave' : 'Save'}">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function createLoadingSkeleton(count = 6) {
+        return Array(count).fill('').map(() => `
+            <div class="prompt-card">
+                <div class="skeleton" style="aspect-ratio: 1/1;"></div>
+                <div style="padding: 10px;">
+                    <div class="skeleton" style="height: 12px; width: 60%; margin-bottom: 6px;"></div>
+                    <div class="skeleton" style="height: 10px; width: 40%;"></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ==========================================
+    // VIEW RENDERERS
+    // ==========================================
+    function renderHome() {
+        const featured = State.prompts.length > 0 ? State.prompts[0] : null;
+        const trending = State.prompts.slice(1, 13);
+        const recentSaved = State.savedPrompts.slice(0, 4);
+
+        return `
+            <div class="animate-fade">
+                <!-- Hero section -->
+                <section class="hero-gradient" style="padding: 24px 16px 20px;">
+                    <p style="font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 4px;">Welcome to PromptVerse</p>
+                    <h2 style="font-size: 24px; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">
+                        Discover Perfect<br>AI Image Prompts
+                    </h2>
+                    <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">
+                        Browse thousands of prompts from Civitai, Lexica, and more. Copy, save, and create stunning AI art.
+                    </p>
+                    <div onclick="switchView('search')" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; cursor: pointer;">
+                        <i class="fas fa-magnifying-glass" style="color: var(--muted); font-size: 14px;"></i>
+                        <span style="color: var(--muted); font-size: 14px;">Search prompts...</span>
+                    </div>
+                </section>
+
+                <!-- Quick categories -->
+                <section style="padding: 0 16px 16px;">
+                    <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none;" class="hide-scrollbar">
+                        ${CATEGORIES.slice(0, 8).map(cat => `
+                            <div class="chip" onclick="exploreCategory('${cat.id}')">
+                                <i class="fas ${cat.icon}" style="font-size: 10px;"></i>
+                                ${cat.name}
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <!-- Featured prompt -->
+                ${featured ? `
+                <section style="padding: 0 16px 20px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Featured</h3>
+                    <div onclick="openDetail(State.prompts[0])" style="
+                        background: var(--bg2); border: 1px solid var(--border); border-radius: 18px;
+                        overflow: hidden; cursor: pointer; transition: all 0.3s ease;
+                    " onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+                        ${featured.imageUrl ? `
+                            <img src="${featured.imageUrl}" alt="Featured" style="width: 100%; height: 200px; object-fit: cover;" loading="lazy" onerror="this.style.display='none'">
+                        ` : ''}
+                        <div style="padding: 14px;">
+                            <p style="font-size: 13px; color: var(--text); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${escapeHtml(featured.prompt.substring(0, 150))}
+                            </p>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+                                <span style="font-size: 10px; color: var(--accent); background: rgba(6,214,160,0.1); padding: 3px 8px; border-radius: 6px;">${featured.source}</span>
+                                ${featured.model ? `<span style="font-size: 10px; color: var(--muted);">${escapeHtml(featured.model)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                ` : ''}
+
+                <!-- Trending -->
+                <section style="padding: 0 16px 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h3 style="font-size: 16px; font-weight: 700;">Trending</h3>
+                        <span onclick="switchView('explore')" style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500;">See all <i class="fas fa-chevron-right" style="font-size: 10px;"></i></span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        ${State.loading ? createLoadingSkeleton(4) :
+                          trending.length > 0 ? trending.map((p, i) => createPromptCard(p, i)).join('') :
+                          `<div class="empty-state" style="grid-column: span 2;"><i class="fas fa-wand-magic-sparkles"></i><p>No prompts loaded yet</p></div>`
+                        }
+                    </div>
+                </section>
+
+                <!-- Recent saved -->
+                ${recentSaved.length > 0 ? `
+                <section style="padding: 0 16px 24px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h3 style="font-size: 16px; font-weight: 700;">Recently Saved</h3>
+                        <span onclick="switchView('saved')" style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500;">View all <i class="fas fa-chevron-right" style="font-size: 10px;"></i></span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${recentSaved.map(p => `
+                            <div onclick="openDetail(State.savedPrompts.find(sp=>sp.id==='${p.id}'))" style="
+                                display: flex; align-items: center; gap: 12px;
+                                padding: 10px 14px; background: var(--bg2);
+                                border: 1px solid var(--border); border-radius: 14px;
+                                cursor: pointer; transition: all 0.2s ease;
+                            " onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+                                ${p.imageUrl ? `<img src="${p.imageUrl}" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none'">` : `<div style="width: 44px; height: 44px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fas fa-wand-magic-sparkles" style="color: var(--muted); font-size: 14px;"></i></div>`}
+                                <p style="font-size: 12px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(p.prompt.substring(0, 60))}</p>
+                                <i class="fas fa-chevron-right" style="color: var(--muted); font-size: 10px;"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function renderExplore() {
+        const sourceInfo = SOURCES[State.currentSource];
+        return `
+            <div class="animate-fade">
+                <!-- Source info -->
+                <section style="padding: 16px 16px 12px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: ${sourceInfo.color}22; color: ${sourceInfo.color};">
+                                <i class="fas ${sourceInfo.icon}"></i>
+                            </div>
+                            <div>
+                                <h2 style="font-size: 16px; font-weight: 700;">${sourceInfo.name}</h2>
+                                <p style="font-size: 11px; color: var(--muted);">${State.prompts.length} prompts loaded</p>
+                            </div>
+                        </div>
+                        <button onclick="loadPrompts().then(renderCurrentView)" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px;">
+                            <i class="fas fa-arrows-rotate ${State.loading ? 'fa-spin' : ''}"></i> Refresh
+                        </button>
+                    </div>
+
+                    <!-- Sort options -->
+                    <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+                        ${['trending', 'newest'].map(sort => `
+                            <div class="chip ${State.sortBy === sort ? 'active' : ''}" onclick="changeSort('${sort}')">
+                                <i class="fas ${sort === 'trending' ? 'fa-fire' : 'fa-clock'}"></i>
+                                ${sort.charAt(0).toUpperCase() + sort.slice(1)}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Category chips -->
+                    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none;">
+                        ${CATEGORIES.map(cat => `
+                            <div class="chip ${State.currentCategory === cat.id ? 'active' : ''}" onclick="changeCategory('${cat.id}')">
+                                ${cat.name}
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <!-- Prompt grid -->
+                <section style="padding: 0 16px 24px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;" id="exploreGrid">
+                        ${State.loading ? createLoadingSkeleton(6) :
+                          State.prompts.length > 0 ? State.prompts.map((p, i) => createPromptCard(p, i)).join('') :
+                          `<div class="empty-state" style="grid-column: span 2;">
+                              <i class="fas fa-wand-magic-sparkles"></i>
+                              <p style="margin-bottom: 12px;">No prompts found</p>
+                              <button onclick="loadPrompts().then(renderCurrentView)" class="action-btn primary" style="font-size: 12px;">Try Again</button>
+                          </div>`
+                        }
+                    </div>
+
+                    <!-- Load more -->
+                    ${State.hasMore && !State.loading && State.prompts.length > 0 ? `
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="loadMore()" class="action-btn secondary">
+                                <i class="fas fa-plus"></i> Load More
+                            </button>
+                        </div>
+                    ` : ''}
+                </section>
+            </div>
+        `;
+    }
+
+    function renderSearch() {
+        return `
+            <div class="animate-fade">
+                <section style="padding: 16px;">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 14px;">Search Prompts</h2>
+                    <div style="position: relative; margin-bottom: 16px;">
+                        <i class="fas fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px;"></i>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Describe what you want to create..."
+                            value="${escapeHtml(State.searchQuery)}" onkeydown="if(event.key==='Enter')doSearch()" autofocus>
+                        ${State.searchQuery ? `<button onclick="clearSearch()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer;"><i class="fas fa-xmark"></i></button>` : ''}
+                    </div>
+                    <button onclick="doSearch()" class="action-btn primary" style="width: 100%; margin-bottom: 16px;">
+                        <i class="fas fa-magnifying-glass"></i> Search
+                    </button>
+                </section>
+
+                <!-- Search results -->
+                <section style="padding: 0 16px 24px;">
+                    ${State.searchQuery && State.prompts.length > 0 ? `
+                        <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Results for "${escapeHtml(State.searchQuery)}"</p>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            ${State.prompts.map((p, i) => createPromptCard(p, i)).join('')}
+                        </div>
+                    ` : State.searchQuery && !State.loading ? `
+                        <div class="empty-state">
+                            <i class="fas fa-magnifying-glass"></i>
+                            <p>No results found for "${escapeHtml(State.searchQuery)}"</p>
+                            <p style="font-size: 12px; margin-top: 4px;">Try different keywords or sources</p>
+                        </div>
+                    ` : !State.searchQuery ? `
+                        <!-- Popular searches -->
+                        <div>
+                            <p style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text);">Popular Searches</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${['anime girl', 'landscape', 'cyberpunk', 'portrait', 'fantasy art', 'cat', 'space', 'dragon', 'flowers', 'architecture', 'robot', 'sunset'].map(q => `
+                                    <div class="chip" onclick="quickSearch('${q}')">${q}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </section>
+            </div>
+        `;
+    }
+
+    function renderSaved() {
+        return `
+            <div class="animate-fade">
+                <section style="padding: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div>
+                            <h2 style="font-size: 18px; font-weight: 700;">Saved Prompts</h2>
+                            <p style="font-size: 12px; color: var(--muted);">${State.savedPrompts.length} prompt${State.savedPrompts.length !== 1 ? 's' : ''} saved</p>
+                        </div>
+                        ${State.savedPrompts.length > 0 ? `
+                            <button onclick="clearAllSaved()" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px; color: #f43f5e; border-color: rgba(244,63,94,0.3);">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                        ` : ''}
+                    </div>
+                </section>
+
+                <section style="padding: 0 16px 24px;">
+                    ${State.savedPrompts.length > 0 ? `
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            ${State.savedPrompts.map((p, i) => `
+                                <div onclick="openDetail(State.savedPrompts[${i}])" class="animate-slide" style="animation-delay: ${i * 40}ms; display: flex; gap: 12px; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+                                    ${p.imageUrl ? `<img src="${p.imageUrl}" style="width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none'">` : `<div style="width: 56px; height: 56px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fas fa-wand-magic-sparkles" style="color: var(--muted);"></i></div>`}
+                                    <div style="flex: 1; min-width: 0;">
+                                        <p style="font-size: 12px; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(p.prompt.substring(0, 120))}</p>
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
+                                            <span style="font-size: 10px; color: var(--accent);">${p.source || 'Built-in'}</span>
+                                            ${p.model ? `<span style="font-size: 10px; color: var(--muted);">· ${escapeHtml(p.model)}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation(); toggleSave(State.savedPrompts[${i}])" style="background: none; border: none; color: #f59e0b; cursor: pointer; padding: 4px; font-size: 14px; align-self: flex-start;" aria-label="Remove from saved">
+                                        <i class="fas fa-bookmark"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="empty-state">
+                            <i class="fas fa-bookmark"></i>
+                            <p style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">No saved prompts yet</p>
+                            <p style="font-size: 12px;">Browse and save prompts you love</p>
+                            <button onclick="switchView('explore')" class="action-btn primary" style="margin-top: 16px; font-size: 12px;">
+                                <i class="fas fa-compass"></i> Explore Prompts
+                            </button>
+                        </div>
+                    `}
+                </section>
+            </div>
+        `;
+    }
+
+    // ==========================================
+    // VIEW SWITCHING
+    // ==========================================
+    function switchView(view) {
+        State.currentView = view;
+
+        // Update nav
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.view === view);
+        });
+
+        renderCurrentView();
+        document.getElementById('mainContent').scrollTop = 0;
+    }
+
+    function renderCurrentView() {
+        const main = document.getElementById('mainContent');
+        switch(State.currentView) {
+            case 'home': main.innerHTML = renderHome(); break;
+            case 'explore': main.innerHTML = renderExplore(); break;
+            case 'search': main.innerHTML = renderSearch(); break;
+            case 'saved': main.innerHTML = renderSaved(); break;
+        }
+    }
+
+    // ==========================================
+    // ACTIONS
+    // ==========================================
+    async function doSearch() {
+        const input = document.getElementById('searchInput');
+        const query = input ? input.value.trim() : State.searchQuery;
+        if (!query) return;
+
+        State.searchQuery = query;
+        State.prompts = [];
+        State.loading = true;
+        renderCurrentView();
+
+        // Use Lexica for search (better search capability)
+        const prevSource = State.currentSource;
+        State.currentSource = 'lexica';
+
+        await loadPrompts();
+        State.currentSource = prevSource;
+        renderCurrentView();
+    }
+
+    function quickSearch(query) {
+        State.searchQuery = query;
+        doSearch();
+    }
+
+    function clearSearch() {
+        State.searchQuery = '';
+        State.prompts = [];
+        renderCurrentView();
+    }
+
+    async function changeCategory(cat) {
+        State.currentCategory = cat;
+        State.prompts = [];
+        State.currentPage = 1;
+        await loadPrompts();
+        renderCurrentView();
+    }
+
+    async function changeSort(sort) {
+        State.sortBy = sort;
+        State.prompts = [];
+        State.currentPage = 1;
+        await loadPrompts();
+        renderCurrentView();
+    }
+
+    async function loadMore() {
+        State.currentPage++;
+        await loadPrompts(true);
+        renderCurrentView();
+    }
+
+    function exploreCategory(cat) {
+        State.currentCategory = cat;
+        switchView('explore');
+    }
+
+    function clearAllSaved() {
+        if (confirm('Remove all saved prompts?')) {
+            State.savedPrompts = [];
+            localStorage.setItem('pv_saved', '[]');
+            updateSavedNotif();
+            renderCurrentView();
+            showToast('All saved prompts cleared', 'fa-trash');
+        }
+    }
+
+    // ==========================================
+    // BACKGROUND AMBIENT EFFECT
+    // ==========================================
+    function createAmbientOrbs() {
+        const container = document.createElement('div');
+        container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;';
+        document.body.insertBefore(container, document.body.firstChild);
+
+        const colors = ['rgba(6,214,160,0.04)', 'rgba(124,58,237,0.04)', 'rgba(6,182,212,0.03)'];
+        for (let i = 0; i < 3; i++) {
+            const orb = document.createElement('div');
+            const size = 250 + Math.random() * 200;
+            orb.style.cssText = `
+                position: absolute;
+                width: ${size}px; height: ${size}px;
+                border-radius: 50%;
+                background: ${colors[i]};
+                filter: blur(80px);
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
+                animation: float ${6 + Math.random() * 4}s ease-in-out infinite;
+                animation-delay: ${i * 2}s;
+            `;
+            container.appendChild(orb);
+        }
+    }
+
+    // ==========================================
+    // INFINITE SCROLL
+    // ==========================================
+    function setupInfiniteScroll() {
+        const main = document.getElementById('mainContent');
+        main.addEventListener('scroll', () => {
+            if (State.currentView !== 'explore') return;
+            const threshold = 300;
+            if (main.scrollHeight - main.scrollTop - main.clientHeight < threshold) {
+                if (!State.loading && State.hasMore && State.prompts.length > 0) {
+                    loadMore();
+                }
+            }
+        });
+    }
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    async function init() {
+        createAmbientOrbs();
+        updateSavedNotif();
+        setupInfiniteScroll();
+
+        // Render loading state first
+        renderCurrentView();
+
+        // Load prompts from default source
+        await loadPrompts();
+        renderCurrentView();
+    }
+
+    // Hide scrollbar for chip containers
+    const style = document.createElement('style');
+    style.textContent = `.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`;
+    document.head.appendChild(style);
+
+    // Start the app
+    init();
+    </script>
+</body>
+</html>
