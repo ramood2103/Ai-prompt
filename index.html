@@ -4,1531 +4,1126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PromptVerse — AI Prompt Browser</title>
-    <meta name="theme-color" content="#0b0b12">
+    <meta name="theme-color" content="#0a0a0f">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { 'space': ['Space Grotesk', 'sans-serif'] },
-                    colors: {
-                        dark: { 900: '#0b0b12', 800: '#111120', 700: '#181830', 600: '#1f1f40', 500: '#2a2a50' },
-                        accent: { DEFAULT: '#06d6a0', light: '#34efbf', dark: '#04a87e' },
-                        violet: { DEFAULT: '#7c3aed', light: '#a78bfa' }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         :root {
-            --bg: #0b0b12;
-            --bg2: #111120;
-            --bg3: #181830;
-            --bg4: #1f1f40;
-            --accent: #06d6a0;
-            --accent2: #7c3aed;
-            --text: #f0f0f5;
-            --muted: #7a7a9a;
-            --border: #2a2a4a;
+            --bg:#0a0a0f;--bg2:#10101a;--bg3:#161625;--bg4:#1c1c32;
+            --accent:#06d6a0;--accent2:#7c3aed;--accent3:#f59e0b;
+            --text:#ededf5;--muted:#6e6e8a;--border:#262642;
+            --danger:#f43f5e;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        html, body { overflow: hidden; height: 100%; }
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-        /* App shell */
-        .app-shell {
-            display: flex; flex-direction: column;
-            height: 100vh; height: 100dvh;
-            max-width: 480px; margin: 0 auto;
-            position: relative; overflow: hidden;
-        }
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        html,body{overflow:hidden;height:100%;font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text)}
+        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+        .app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
+        @media(min-width:481px){.app{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
 
         /* Header */
-        .app-header {
-            background: rgba(11,11,18,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(42,42,74,0.4);
-            z-index: 50;
-            padding: 12px 16px;
-            flex-shrink: 0;
-        }
+        .hdr{background:rgba(10,10,15,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(38,38,66,0.5);padding:10px 14px;flex-shrink:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
+        .hdr-logo{display:flex;align-items:center;gap:10px}
+        .hdr-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-size:14px}
+        .hdr h1{font-size:16px;font-weight:700;letter-spacing:-0.3px}.hdr p{font-size:10px;color:var(--muted)}
+        .hdr-actions{display:flex;gap:6px}
+        .hdr-btn{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:13px;transition:all .2s}
+        .hdr-btn:hover{border-color:var(--accent);color:var(--accent)}
 
-        /* Main content */
-        .app-content {
-            flex: 1; overflow-y: auto; overflow-x: hidden;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
+        /* Content area */
+        .content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 
         /* Bottom nav */
-        .bottom-nav {
-            background: rgba(11,11,18,0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(42,42,74,0.4);
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 8px 0 env(safe-area-inset-bottom, 8px);
-            flex-shrink: 0; z-index: 50;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-            padding: 6px 16px; border-radius: 12px; cursor: pointer;
-            transition: all 0.25s ease; color: var(--muted);
-            font-size: 10px; font-weight: 500;
-        }
-        .nav-item i { font-size: 20px; transition: transform 0.25s ease; }
-        .nav-item.active { color: var(--accent); }
-        .nav-item.active i { transform: scale(1.15); }
-        .nav-item:hover { color: var(--accent); }
+        .bnav{background:rgba(10,10,15,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(38,38,66,0.5);display:flex;justify-content:space-around;padding:6px 0 max(env(safe-area-inset-bottom),8px);flex-shrink:0;z-index:50}
+        .bnav-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 14px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600;transition:all .2s;position:relative}
+        .bnav-item i{font-size:18px;transition:transform .2s}.bnav-item.act{color:var(--accent)}.bnav-item.act i{transform:scale(1.15)}
+        .bnav-dot{position:absolute;top:3px;right:10px;width:5px;height:5px;background:var(--accent3);border-radius:50%}
 
-        /* Prompt cards */
-        .prompt-card {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        .prompt-card:hover { border-color: rgba(6,214,160,0.3); transform: translateY(-2px); }
-        .prompt-card:active { transform: scale(0.97); }
+        /* Cards */
+        .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative}
+        .card:hover{border-color:rgba(6,214,160,0.3);transform:translateY(-1px)}.card:active{transform:scale(0.97)}
+        .card-img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--bg3)}
+        .card-ov{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.88));padding:30px 8px 8px}
+        .card-ov p{font-size:10px;color:rgba(255,255,255,0.88);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        .card-badge{position:absolute;top:6px;right:6px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid rgba(6,214,160,0.3);background:rgba(6,214,160,0.15);color:var(--accent)}
+        .card-foot{padding:8px 10px;display:flex;align-items:center;justify-content:space-between}
+        .card-src{font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 7px;border-radius:5px}
+        .card-save{background:none;border:none;cursor:pointer;font-size:13px;padding:2px;transition:color .2s}
+        .card-save.saved{color:var(--accent3)!important}
 
-        .prompt-card .card-img {
-            width: 100%; aspect-ratio: 1/1;
-            object-fit: cover; display: block;
-            background: var(--bg3);
-            transition: opacity 0.4s ease;
-        }
-        .prompt-card .card-img.loaded {  }
-        .prompt-card .card-img:not([src]) { opacity: 0; }
+        /* Chips */
+        .chips{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;-ms-overflow-style:none;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+        .chip{display:inline-flex;align-items:center;gap:3px;padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;background:var(--bg3);color:var(--muted);border:1px solid transparent;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .2s}
+        .chip:hover{border-color:var(--border);color:var(--text)}.chip.act{background:rgba(6,214,160,0.12);color:var(--accent);border-color:rgba(6,214,160,0.35)}
 
-        .card-overlay {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85));
-            padding: 40px 10px 10px;
-        }
+        /* Buttons */
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:11px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+        .btn:active{transform:scale(0.95)}.btn-p{background:var(--accent);color:var(--bg)}.btn-p:hover{filter:brightness(1.1)}
+        .btn-s{background:var(--bg3);color:var(--text);border:1px solid var(--border)}.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+        .btn-sm{padding:5px 10px;font-size:10px;border-radius:8px}
 
-        .card-source-badge {
-            position: absolute; top: 8px; right: 8px;
-            background: rgba(6,214,160,0.2); color: var(--accent);
-            font-size: 9px; font-weight: 600; padding: 3px 8px;
-            border-radius: 6px; border: 1px solid rgba(6,214,160,0.3);
-        }
-
-        /* Category chips */
-        .chip {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 6px 14px; border-radius: 20px;
-            font-size: 12px; font-weight: 500;
-            background: var(--bg3); color: var(--muted);
-            border: 1px solid transparent;
-            cursor: pointer; transition: all 0.2s ease;
-            white-space: nowrap; flex-shrink: 0;
-        }
-        .chip:hover { border-color: var(--border); color: var(--text); }
-        .chip.active {
-            background: rgba(6,214,160,0.15); color: var(--accent);
-            border-color: rgba(6,214,160,0.4);
-        }
+        /* Search */
+        .search-box{position:relative}.search-box input{width:100%;padding:11px 14px 11px 40px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s}.search-box input:focus{border-color:var(--accent)}.search-box input::placeholder{color:var(--muted)}
+        .search-box .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
 
         /* Detail modal */
-        .detail-modal {
-            position: fixed; inset: 0; z-index: 100;
-            background: var(--bg);
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            max-width: 480px; margin: 0 auto;
-            overflow-y: auto; overflow-x: hidden;
-        }
-        .detail-modal.open { transform: translateY(0); }
-
-        .detail-img {
-            width: 100%; max-height: 400px;
-            object-fit: contain; background: var(--bg2);
-        }
-
-        .prompt-text-box {
-            background: var(--bg3); border: 1px solid var(--border);
-            border-radius: 12px; padding: 14px;
-            font-size: 13px; line-height: 1.7;
-            color: #c8c8e0; position: relative;
-            word-break: break-word;
-        }
-
-        .param-tag {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 4px 10px; border-radius: 8px;
-            background: var(--bg3); border: 1px solid var(--border);
-            font-size: 11px; color: var(--muted);
-        }
-
-        /* Action buttons */
-        .action-btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 10px 18px; border-radius: 12px;
-            font-size: 13px; font-weight: 600;
-            cursor: pointer; transition: all 0.2s ease;
-            border: none; outline: none;
-        }
-        .action-btn:active { transform: scale(0.95); }
-        .action-btn.primary {
-            background: var(--accent); color: #0b0b12;
-        }
-        .action-btn.primary:hover { background: var(--accent); filter: brightness(1.1); }
-        .action-btn.secondary {
-            background: var(--bg3); color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .action-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .modal{position:fixed;inset:0;z-index:100;background:var(--bg);transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1);max-width:480px;margin:0 auto;overflow-y:auto;overflow-x:hidden}
+        .modal.open{transform:translateY(0)}
+        .modal-hdr{position:sticky;top:0;z-index:10;background:rgba(10,10,15,0.9);backdrop-filter:blur(16px);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+        .modal-img{width:100%;max-height:380px;object-fit:contain;background:var(--bg2)}
+        .prompt-box{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px;font-size:12px;line-height:1.7;color:#c0c0d8;word-break:break-word;position:relative}
+        .param-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--muted)}
 
         /* Toast */
-        .toast-container {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-            z-index: 200; pointer-events: none;
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-        }
-        .toast {
-            background: var(--bg4); color: var(--text);
-            padding: 10px 20px; border-radius: 12px;
-            font-size: 13px; font-weight: 500;
-            border: 1px solid var(--border);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.2s forwards;
-            display: flex; align-items: center; gap: 8px;
-        }
+        .toast-wrap{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);z-index:200;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:6px}
+        .toast{background:var(--bg4);color:var(--text);padding:8px 18px;border-radius:10px;font-size:12px;font-weight:500;border:1px solid var(--border);box-shadow:0 8px 28px rgba(0,0,0,0.5);animation:toastIn .3s ease,toastOut .3s ease 2s forwards;display:flex;align-items:center;gap:7px}
 
-        /* Source selector */
-        .source-tab {
-            padding: 8px 16px; border-radius: 10px;
-            font-size: 12px; font-weight: 600;
-            background: transparent; color: var(--muted);
-            cursor: pointer; transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-        .source-tab.active {
-            background: rgba(6,214,160,0.12); color: var(--accent);
-            border-color: rgba(6,214,160,0.3);
-        }
+        /* Source panel */
+        .src-card{padding:14px;border-radius:12px;cursor:pointer;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;gap:12px;transition:all .2s}
+        .src-card:hover{border-color:rgba(6,214,160,0.3)}.src-card.sel{background:rgba(6,214,160,0.06);border-color:rgba(6,214,160,0.35)}
+        .src-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .src-count{font-size:20px;font-weight:800;color:var(--accent)}
 
-        /* Loading skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 12px;
-        }
+        /* Loading */
+        .skel{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:10px}
+        .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 
-        /* Glow effects */
-        .glow-accent {
-            box-shadow: 0 0 30px rgba(6,214,160,0.15), 0 0 60px rgba(6,214,160,0.05);
-        }
+        /* Empty */
+        .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;color:var(--muted)}
+        .empty i{font-size:42px;margin-bottom:14px;opacity:0.25}
 
         /* Animations */
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes toastOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            80%, 100% { transform: scale(1.3); opacity: 0; }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        @keyframes bgShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
+        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 
-        .animate-fade { animation: fadeIn 0.4s ease; }
-        .animate-slide { animation: slideUp 0.5s ease; }
-        .animate-float { animation: float 3s ease-in-out infinite; }
+        .anim-up{animation:fadeUp .4s ease both}
+        .anim-float{animation:float 4s ease-in-out infinite}
+        .hero-bg{background:linear-gradient(135deg,rgba(6,214,160,0.06),rgba(124,58,237,0.06),rgba(6,214,160,0.03));background-size:300% 300%;animation:bgShift 8s ease infinite}
 
-        /* Hero gradient */
-        .hero-gradient {
-            background: linear-gradient(135deg, rgba(6,214,160,0.08), rgba(124,58,237,0.08), rgba(6,214,160,0.04));
-            background-size: 300% 300%;
-            animation: bgShift 8s ease infinite;
-        }
+        /* Status bar */
+        .status-bar{display:flex;gap:6px;padding:10px 14px;flex-wrap:wrap}
+        .status-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+        .status-pill.ok{border-color:rgba(6,214,160,0.3);color:var(--accent)}
+        .status-pill.err{border-color:rgba(244,63,94,0.3);color:var(--danger)}
+        .status-pill.load{border-color:rgba(245,158,11,0.3);color:var(--accent3)}
+        .status-dot{width:5px;height:5px;border-radius:50%}
+        .status-pill.ok .status-dot{background:var(--accent)}.status-pill.err .status-dot{background:var(--danger)}.status-pill.load .status-dot{background:var(--accent3);animation:pulse 1s infinite}
 
-        /* Search input */
-        .search-input {
-            width: 100%; padding: 12px 16px 12px 42px;
-            background: var(--bg3); border: 1px solid var(--border);
-            border-radius: 14px; color: var(--text);
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 14px; outline: none;
-            transition: border-color 0.2s ease;
-        }
-        .search-input:focus { border-color: var(--accent); }
-        .search-input::placeholder { color: var(--muted); }
-
-        /* Responsive - wider screens */
-        @media (min-width: 481px) {
-            .app-shell {
-                border-left: 1px solid var(--border);
-                border-right: 1px solid var(--border);
-            }
-        }
-
-        /* Loading spinner */
-        .spinner {
-            width: 32px; height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Empty state */
-        .empty-state {
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 60px 20px;
-            text-align: center; color: var(--muted);
-        }
-        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-
-        /* Save bookmark animation */
-        .bookmark-btn.saved { color: #f59e0b !important; }
-        .bookmark-btn.saved i { animation: pulse-ring 0.4s ease; }
-
-        /* Image loading placeholder */
-        .img-placeholder {
-            background: var(--bg3);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--muted); font-size: 24px;
-        }
-
-        /* Notification dot */
-        .notif-dot {
-            width: 6px; height: 6px; background: var(--accent);
-            border-radius: 50%; position: absolute;
-            top: 4px; right: 12px;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
     </style>
 </head>
 <body>
-    <div class="app-shell" id="app">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent), var(--accent2));">
-                        <i class="fas fa-wand-magic-sparkles text-sm" style="color: var(--bg);"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-base font-bold tracking-tight" style="color: var(--text);">PromptVerse</h1>
-                        <p class="text-xs" style="color: var(--muted);">AI Prompt Browser</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="showSourceSelector()" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer;" aria-label="Source selector">
-                        <i class="fas fa-database text-sm"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="app-content" id="mainContent">
-            <!-- Views rendered by JS -->
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-            <div class="nav-item active" data-view="home" onclick="switchView('home')" role="button" tabindex="0" aria-label="Home">
-                <i class="fas fa-house"></i>
-                <span>Home</span>
-            </div>
-            <div class="nav-item" data-view="explore" onclick="switchView('explore')" role="button" tabindex="0" aria-label="Explore">
-                <i class="fas fa-compass"></i>
-                <span>Explore</span>
-            </div>
-            <div class="nav-item" data-view="search" onclick="switchView('search')" role="button" tabindex="0" aria-label="Search">
-                <i class="fas fa-magnifying-glass"></i>
-                <span>Search</span>
-            </div>
-            <div class="nav-item" data-view="saved" onclick="switchView('saved')" role="button" tabindex="0" aria-label="Saved">
-                <i class="fas fa-bookmark"></i>
-                <span>Saved</span>
-                <div class="notif-dot" id="savedNotif" style="display:none;"></div>
-            </div>
-        </nav>
-
-        <!-- Detail Modal -->
-        <div class="detail-modal" id="detailModal">
-            <div id="detailContent"></div>
+<div class="app" id="app">
+    <!-- Header -->
+    <header class="hdr">
+        <div class="hdr-logo">
+            <div class="hdr-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div><h1>PromptVerse</h1><p id="hdrSub">Loading sources...</p></div>
         </div>
-
-        <!-- Source Selector Modal -->
-        <div class="detail-modal" id="sourceModal" style="z-index: 110;">
-            <div class="p-5">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold">Data Sources</h2>
-                    <button onclick="closeSourceSelector()" class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer;">
-                        <i class="fas fa-xmark"></i>
-                    </button>
-                </div>
-                <div class="space-y-3" id="sourceList"></div>
-                <div class="mt-6 p-4 rounded-xl" style="background: var(--bg3); border: 1px solid var(--border);">
-                    <p class="text-xs" style="color: var(--muted); line-height: 1.6;">
-                        <i class="fas fa-circle-info" style="color: var(--accent);"></i>
-                        PromptVerse fetches prompts from free public APIs and websites. If a source is unreachable, it falls back to the built-in library. Data is cached for performance.
-                    </p>
-                </div>
-            </div>
+        <div class="hdr-actions">
+            <button class="hdr-btn" onclick="showSources()" aria-label="Sources"><i class="fas fa-database"></i></button>
+            <button class="hdr-btn" onclick="refreshAll()" aria-label="Refresh"><i class="fas fa-arrows-rotate" id="refreshIcon"></i></button>
         </div>
+    </header>
 
-        <!-- Toast Container -->
-        <div class="toast-container" id="toastContainer"></div>
-    </div>
+    <!-- Content -->
+    <main class="content" id="mainContent"></main>
 
-    <script>
-    // ==========================================
-    // APP STATE
-    // ==========================================
-    const State = {
-        currentView: 'home',
-        currentSource: 'civitai',
-        currentCategory: 'all',
-        prompts: [],
-        savedPrompts: JSON.parse(localStorage.getItem('pv_saved') || '[]'),
-        searchQuery: '',
-        currentPage: 1,
-        hasMore: true,
-        loading: false,
-        sortBy: 'trending',
-        imageErrors: new Set()
-    };
+    <!-- Bottom Nav -->
+    <nav class="bnav">
+        <div class="bnav-item act" data-v="home" onclick="go('home')"><i class="fas fa-house"></i><span>Home</span></div>
+        <div class="bnav-item" data-v="explore" onclick="go('explore')"><i class="fas fa-compass"></i><span>Explore</span></div>
+        <div class="bnav-item" data-v="search" onclick="go('search')"><i class="fas fa-magnifying-glass"></i><span>Search</span></div>
+        <div class="bnav-item" data-v="saved" onclick="go('saved')"><i class="fas fa-bookmark"></i><span>Saved</span><div class="bnav-dot" id="saveDot" style="display:none"></div></div>
+    </nav>
 
-    // ==========================================
-    // BUILT-IN PROMPT LIBRARY (always available)
-    // ==========================================
-    const BUILTIN_PROMPTS = [
-        {
-            id:'b1', prompt:'A serene Japanese garden at twilight, stone lanterns glowing warmly, cherry blossom petals drifting across a koi pond, mist rising from the water, ultra detailed, cinematic lighting, 8k resolution',
-            negativePrompt:'blurry, low quality, distorted, overexposed', category:'Landscape', tags:['japanese','garden','twilight','cherry blossom'],
-            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b2', prompt:'Cyberpunk street vendor selling neon noodles, rain-slicked pavement reflecting holographic signs, steam rising from food stall, crowded alleyway, blade runner aesthetic, volumetric lighting, extremely detailed',
-            negativePrompt:'ugly, deformed, blurry, low resolution', category:'Sci-Fi', tags:['cyberpunk','neon','rain','street'],
-            model:'SDXL', steps:35, cfgScale:8, sampler:'Euler a', source:'Built-in'
-        },
-        {
-            id:'b3', prompt:'Portrait of an ethereal forest spirit, translucent glowing skin, hair made of moonlight and fireflies, crown of crystal antlers, dark enchanted forest background, fantasy art, detailed face, magical atmosphere',
-            negativePrompt:'ugly, deformed face, extra limbs, bad anatomy', category:'Fantasy', tags:['spirit','forest','ethereal','portrait'],
-            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ SDE Karras', source:'Built-in'
-        },
-        {
-            id:'b4', prompt:'Macro photography of morning dewdrops on a spider web, golden hour sunlight refracting through each drop creating tiny rainbows, bokeh background of wildflower meadow, hyperrealistic, 8k',
-            negativePrompt:'blurry, grainy, overexposed, flat', category:'Photography', tags:['macro','dew','golden hour','nature'],
-            model:'SDXL', steps:25, cfgScale:6, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b5', prompt:'Massive floating crystal city above the clouds, bridges of pure light connecting towers, airships docking at crystal platforms, sunset painting the sky in amber and violet, epic scale, concept art',
-            negativePrompt:'low quality, pixelated, ugly, distorted', category:'Fantasy', tags:['crystal','city','floating','epic'],
-            model:'SDXL', steps:32, cfgScale:7.5, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b6', prompt:'Steampunk clockwork owl perched on a brass gear, intricate mechanical parts visible through glass panels, copper and gold tones, dark moody background, detailed mechanical illustration, vintage aesthetic',
-            negativePrompt:'modern, plastic, blurry, simple', category:'3D Render', tags:['steampunk','owl','mechanical','brass'],
-            model:'SDXL', steps:30, cfgScale:7, sampler:'Euler a', source:'Built-in'
-        },
-        {
-            id:'b7', prompt:'Underwater ancient temple ruins overgrown with bioluminescent coral, schools of tropical fish swimming through marble columns, sunbeams filtering through clear water, mystical atmosphere, photorealistic',
-            negativePrompt:'surface, dry, blurry, low detail', category:'Landscape', tags:['underwater','temple','bioluminescent','coral'],
-            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b8', prompt:'Minimalist architectural photography, concrete staircase with dramatic shadows, geometric patterns, black and white with one red accent element, clean composition, cinematic perspective',
-            negativePrompt:'cluttered, colorful, messy, distorted', category:'Minimalist', tags:['architecture','minimalist','shadows','geometric'],
-            model:'SDXL', steps:22, cfgScale:6, sampler:'DPM++ 2M', source:'Built-in'
-        },
-        {
-            id:'b9', prompt:'Anime girl warrior standing on a cliff edge, flowing white hair caught in the wind, ornate samurai armor with cherry blossom engravings, katana drawn, dramatic sunset, studio ghibli inspired, cel shaded',
-            negativePrompt:'realistic, photographic, western style, deformed', category:'Anime', tags:['warrior','sunset','armor','anime'],
-            model:'Anything V5', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b10', prompt:'Cozy cabin interior during a snowstorm, roaring fireplace casting warm orange light, stacks of old books, steaming mug of cocoa on wooden table, fluffy cat sleeping on rug, hygge aesthetic, warm tones',
-            negativePrompt:'cold colors, modern, sterile, empty', category:'Photography', tags:['cabin','cozy','fireplace','winter'],
-            model:'SDXL', steps:26, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b11', prompt:'Abstract fluid art, molten gold and deep ocean blue swirling together, marble texture, high contrast, organic flowing shapes, luxurious feel, 4k texture, metallic sheen',
-            negativePrompt:'figurative, realistic, messy, low quality', category:'Abstract', tags:['fluid','gold','marble','abstract'],
-            model:'SDXL', steps:25, cfgScale:8, sampler:'DPM++ SDE', source:'Built-in'
-        },
-        {
-            id:'b12', prompt:'Astronaut floating in deep space surrounded by a nebula, helmet visor reflecting distant galaxies, tether line trailing into darkness, photorealistic space suit, cosmic color palette, cinematic composition',
-            negativePrompt:'cartoon, low detail, earth, indoor', category:'Sci-Fi', tags:['astronaut','space','nebula','cosmic'],
-            model:'SDXL', steps:35, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b13', prompt:'Dragon made entirely of crystalline ice, perched atop a frozen mountain peak, aurora borealis in the sky, ice crystals refracting rainbow light, majestic and powerful, fantasy illustration, ultra detailed scales',
-            negativePrompt:'fire, warm colors, low detail, cartoonish', category:'Fantasy', tags:['dragon','ice','aurora','crystal'],
-            model:'SDXL', steps:32, cfgScale:7.5, sampler:'DPM++ SDE Karras', source:'Built-in'
-        },
-        {
-            id:'b14', prompt:'Vintage vinyl record store interior, warm amber lighting, floor-to-ceiling record bins, analog equipment, 1970s aesthetic, film grain, nostalgic mood, documentary photography style',
-            negativePrompt:'modern, digital, clean, bright', category:'Photography', tags:['vintage','records','nostalgic','1970s'],
-            model:'SDXL', steps:24, cfgScale:6.5, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b15', prompt:'Biomechanical humanoid, half organic half machine, exposed circuitry merging with muscle fiber, glowing neural pathways, dark laboratory setting, HR Giger inspired, intricate detail, dark atmosphere',
-            negativePrompt:'cute, bright, cartoon, simple', category:'Sci-Fi', tags:['biomechanical','cyborg','giger','dark'],
-            model:'SDXL', steps:35, cfgScale:8, sampler:'DPM++ SDE Karras', source:'Built-in'
-        },
-        {
-            id:'b16', prompt:'Enchanted library with books flying through the air, magical golden sparkles, spiral staircases reaching into clouds, ancient tome open on a reading stand with glowing runes, warm candlelight, fantasy concept art',
-            negativePrompt:'modern library, empty, dark, mundane', category:'Fantasy', tags:['library','magic','books','enchanted'],
-            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b17', prompt:'Product photography of a luxury perfume bottle, dramatic side lighting, liquid amber inside crystal bottle, mist and golden particles in the air, dark reflective surface, commercial quality, ultra sharp',
-            negativePrompt:'amateur, blurry, cheap looking, cluttered', category:'Photography', tags:['product','luxury','perfume','commercial'],
-            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b18', prompt:'Post-apocalyptic greenhouse, nature reclaiming a glass dome, vines breaking through steel frames, flowers blooming from rusted cars, sunlight streaming through cracked panels, hopeful atmosphere, concept art',
-            negativePrompt:'pristine, clean, brand new, indoor studio', category:'Concept Art', tags:['post-apocalyptic','nature','greenhouse','reclamation'],
-            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b19', prompt:'Traditional Chinese ink wash painting of mountains emerging from sea of clouds, lone fisherman in small boat below, pine trees clinging to cliffs, minimalist composition, wabi-sabi aesthetic, rice paper texture',
-            negativePrompt:'western style, photorealistic, colorful, busy', category:'Minimalist', tags:['chinese','ink wash','mountains','minimalist'],
-            model:'SDXL', steps:20, cfgScale:5.5, sampler:'Euler a', source:'Built-in'
-        },
-        {
-            id:'b20', prompt:'Alien botanical garden on a distant planet, bioluminescent plants in impossible colors, floating spores, crystal formations growing like trees, two moons in violet sky, otherworldly paradise, scientific illustration style',
-            negativePrompt:'earth plants, human, ordinary, blurry', category:'Sci-Fi', tags:['alien','botanical','bioluminescent','planet'],
-            model:'SDXL', steps:32, cfgScale:7.5, sampler:'DPM++ SDE Karras', source:'Built-in'
-        },
-        {
-            id:'b21', prompt:'Isometric voxel art of a medieval fantasy village, tiny adventurers in the town square, blacksmith forge with glowing embers, windmill turning, flower gardens, cute and colorful, game asset style',
-            negativePrompt:'realistic, dark, gritty, photographic', category:'3D Render', tags:['voxel','isometric','medieval','cute'],
-            model:'SDXL', steps:25, cfgScale:7, sampler:'Euler a', source:'Built-in'
-        },
-        {
-            id:'b22', prompt:'Baroque angel with six wings descending through golden clouds, dramatic chiaroscuro lighting, oil painting style inspired by Caravaggio, ornate halo, flowing robes, divine radiance, masterpiece quality',
-            negativePrompt:'modern, cartoon, anime, simple', category:'Portrait', tags:['angel','baroque','painting','chiaroscuro'],
-            model:'SDXL', steps:30, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b23', prompt:'Neon-drenched Tokyo alley at 3am, vending machine glow, rain creating rivers of color on the ground, silhouette of a lone figure with umbrella, reflections everywhere, cyber-noir atmosphere, film still',
-            negativePrompt:'daytime, sunny, clean, empty', category:'Photography', tags:['tokyo','neon','rain','night'],
-            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b24', prompt:'Cute robot tending a rooftop garden, watering can in mechanical hand, small sunflowers in terra cotta pots, city skyline at sunset, warm and wholesome, pixar style 3D render, detailed textures',
-            negativePrompt:'scary, dark, realistic, horror', category:'3D Render', tags:['robot','garden','cute','pixar'],
-            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M', source:'Built-in'
-        },
-        {
-            id:'b25', prompt:'Ancient Norse rune stones in a misty forest clearing, carved symbols faintly glowing blue, ravens perched on top, moss and lichen covered surfaces, cinematic fog, mystical viking atmosphere, golden hour',
-            negativePrompt:'modern, clean, bright, cartoon', category:'Landscape', tags:['norse','runes','mystical','forest'],
-            model:'SDXL', steps:28, cfgScale:7, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b26', prompt:'Art nouveau decorative border with interlocking irises and dragonflies, gold leaf accents on deep emerald background, Alphonse Mucha inspired, elegant line work, ornamental design, vector-like clarity',
-            negativePrompt:'photographic, 3D, rough, messy', category:'Abstract', tags:['art nouveau','decorative','gold','ornamental'],
-            model:'SDXL', steps:24, cfgScale:7, sampler:'Euler a', source:'Built-in'
-        },
-        {
-            id:'b27', prompt:'Deep sea anglerfish with elaborate bioluminescent lure, abyssal plain background with marine snow, otherworldly deep ocean creatures in the distance, dramatic underwater photography, abyssal zone darkness',
-            negativePrompt:'surface, bright, shallow water, cartoon', category:'Photography', tags:['deep sea','bioluminescent','anglerfish','abyss'],
-            model:'SDXL', steps:30, cfgScale:7.5, sampler:'DPM++ 2M Karras', source:'Built-in'
-        },
-        {
-            id:'b28', prompt:'Massive tree of life growing from a tiny island in an endless ocean, roots visible through crystal clear water, golden leaves falling into the sea, birds circling the canopy, surreal fantasy, epic scale',
-            negativePrompt:'realistic, small, ordinary, dark', category:'Fantasy', tags:['tree of life','ocean','surreal','epic'],
-            model:'SDXL', steps:32, cfgScale:7, sampler:'DPM++ SDE Karras', source:'Built-in'
-        },
-        {
-            id:'b29', prompt:'Retro-futuristic space station interior, 1960s vision of the future, curved plastic furniture, bold primary colors, wall screens showing retro graphics, optimism and wonder, vintage sci-fi illustration',
-            negativePrompt:'modern sci-fi, dark, gritty, realistic', category:'Concept Art', tags:['retro-futuristic','space','1960s','vintage'],
-            model:'SDXL', steps:26, cfgScale:7, sampler:'Euler a', source:'Built-in'
-        },
-        {
-            id:'b30', prompt:'Samurai standing in a field of tall grass, armor catching wind, dramatic backlit composition, red sun on horizon, long shadow stretching forward, ink wash meets digital painting, powerful stance, lone warrior',
-            negativePrompt:'modern, casual, bright, cheerful', category:'Portrait', tags:['samurai','dramatic','backlit','warrior'],
-            model:'SDXL', steps:28, cfgScale:7.5, sampler:'DPM++ 2M Karras', source:'Built-in'
-        }
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal"><div id="detailBody"></div></div>
+
+    <!-- Source Modal -->
+    <div class="modal" id="srcModal" style="z-index:110"><div id="srcBody"></div></div>
+
+    <!-- Toasts -->
+    <div class="toast-wrap" id="toasts"></div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+    view:'home', src:'all', cat:'all', sort:'trending',
+    prompts:[], saved:JSON.parse(localStorage.getItem('pv_s')||'[]'),
+    q:'', page:1, hasMore:true, loading:false,
+    srcStatus:{}, // {civitai:'ok'|'err'|'load', lexica:..., meigen:..., builtin:...}
+    srcCounts:{civitai:0,lexica:0,meigen:0,builtin:0,github:0},
+    imgErr:new Set(), cache:{}
+};
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+const CATS = [
+    {id:'all',n:'All',i:'fa-layer-group'},{id:'landscape',n:'Landscape',i:'fa-mountain-sun'},
+    {id:'portrait',n:'Portrait',i:'fa-user'},{id:'fantasy',n:'Fantasy',i:'fa-hat-wizard'},
+    {id:'anime',n:'Anime',i:'fa-star'},{id:'scifi',n:'Sci-Fi',i:'fa-rocket'},
+    {id:'photo',n:'Photo',i:'fa-camera'},{id:'abstract',n:'Abstract',i:'fa-shapes'},
+    {id:'3d',n:'3D',i:'fa-cube'},{id:'concept',n:'Concept',i:'fa-palette'},
+    {id:'minimal',n:'Minimal',i:'fa-minus'},{id:'character',n:'Character',i:'fa-person'}
+];
+
+// ============================================================
+// CORS PROXY ENGINE
+// ============================================================
+const PROXIES = [
+    u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+];
+
+async function pFetch(url, timeout=10000) {
+    // Direct
+    try {
+        const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);
+        const r=await fetch(url,{signal:c.signal});clearTimeout(t);
+        if(r.ok){const txt=await r.text();try{return JSON.parse(txt)}catch{return txt}}
+    } catch{}
+    // Proxies
+    for(const pf of PROXIES){
+        try{
+            const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);
+            const r=await fetch(pf(url),{signal:c.signal});clearTimeout(t);
+            if(r.ok){const txt=await r.text();try{return JSON.parse(txt)}catch{return txt}}
+        } catch{}
+    }
+    throw new Error('Fetch failed: '+url);
+}
+
+// ============================================================
+// CIVITAI SOURCE — Paginated API, hundreds of prompts
+// ============================================================
+async function fetchCivitai(page=1, limit=50, sort='Most Reactions', tag='') {
+    const p=new URLSearchParams({limit,page,sort,nsfw:'false'});
+    if(tag&&tag!=='all') p.set('tags',tag);
+    const d=await pFetch(`https://civitai.com/api/v1/images?${p}`);
+    if(!d||!d.items) throw new Error('Bad Civitai response');
+    return d.items.filter(i=>i.meta&&i.meta.prompt).map(i=>({
+        id:`c${i.id}`,img:i.url,prompt:i.meta.prompt||'',
+        neg:i.meta.negativePrompt||'',model:i.meta.Model||i.meta.SDVersion||'',
+        steps:i.meta.steps||0,cfg:i.meta.cfgScale||0,
+        sampler:i.meta.sampler||'',seed:i.meta.seed||0,
+        tags:(i.tags||[]).slice(0,8),likes:(i.stats?.likeCount)||0,
+        src:'Civitai',w:i.width||512,h:i.height||512,
+        cat:guessCat(i.meta.prompt||'',i.tags||[])
+    }));
+}
+
+// ============================================================
+// LEXICA SOURCE — Search engine
+// ============================================================
+async function fetchLexica(q='art') {
+    const d=await pFetch(`https://lexica.art/api/v1/search?q=${encodeURIComponent(q)}`);
+    if(!d||!d.images) throw new Error('Bad Lexica response');
+    return d.images.map(i=>({
+        id:`l${i.id}`,img:i.srcSmall||i.src,prompt:i.prompt||'',
+        neg:'',model:'Stable Diffusion',steps:0,cfg:0,sampler:'',seed:i.seed||0,
+        tags:[],likes:0,src:'Lexica',w:i.width||512,h:i.height||512,
+        cat:guessCat(i.prompt||'',[])
+    }));
+}
+
+// ============================================================
+// MEIGEN.AI SCRAPER — Dedicated multi-strategy scraper
+// ============================================================
+async function scrapeMeigen() {
+    const results = [];
+    const urls = [
+        'https://www.meigen.ai/',
+        'https://www.meigen.ai/prompts',
+        'https://www.meigen.ai/explore',
+        'https://www.meigen.ai/trending',
+        'https://www.meigen.ai/latest',
+        'https://www.meigen.ai/new',
+        'https://www.meigen.ai/categories',
+        'https://www.meigen.ai/gallery'
     ];
 
-    // ==========================================
-    // CATEGORIES
-    // ==========================================
-    const CATEGORIES = [
-        { id:'all', name:'All', icon:'fa-layer-group' },
-        { id:'Landscape', name:'Landscape', icon:'fa-mountain-sun' },
-        { id:'Portrait', name:'Portrait', icon:'fa-user' },
-        { id:'Fantasy', name:'Fantasy', icon:'fa-hat-wizard' },
-        { id:'Sci-Fi', name:'Sci-Fi', icon:'fa-rocket' },
-        { id:'Anime', name:'Anime', icon:'fa-star' },
-        { id:'Photography', name:'Photo', icon:'fa-camera' },
-        { id:'Abstract', name:'Abstract', icon:'fa-shapes' },
-        { id:'3D Render', name:'3D', icon:'fa-cube' },
-        { id:'Concept Art', name:'Concept', icon:'fa-palette' },
-        { id:'Minimalist', name:'Minimal', icon:'fa-minus' }
-    ];
-
-    // ==========================================
-    // CORS PROXY + FETCH UTILITY
-    // ==========================================
-    const PROXY_LIST = [
-        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-    ];
-
-    async function smartFetch(url, timeout = 12000) {
-        // Try direct fetch first
+    for (const url of urls) {
         try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), timeout);
-            const res = await fetch(url, { signal: controller.signal });
-            clearTimeout(tid);
-            if (res.ok) {
-                const text = await res.text();
-                try { return JSON.parse(text); } catch { return text; }
+            const html = await pFetch(url, 8000);
+            if (typeof html !== 'string') continue;
+            const items = parseMeigenHTML(html, url);
+            if (items.length > 0) {
+                results.push(...items);
+                break; // Found working page, no need to try more URLs
             }
-        } catch(e) { /* CORS or network error, try proxies */ }
-
-        // Try each CORS proxy
-        for (const proxyFn of PROXY_LIST) {
-            try {
-                const proxyUrl = proxyFn(url);
-                const controller = new AbortController();
-                const tid = setTimeout(() => controller.abort(), timeout);
-                const res = await fetch(proxyUrl, { signal: controller.signal });
-                clearTimeout(tid);
-                if (res.ok) {
-                    const text = await res.text();
-                    try { return JSON.parse(text); } catch { return text; }
-                }
-            } catch(e) { continue; }
-        }
-
-        throw new Error('All fetch methods failed for: ' + url);
+        } catch { continue; }
     }
 
-    // ==========================================
-    // API SOURCES
-    // ==========================================
-    const SOURCES = {
-        civitai: {
-            name: 'Civitai',
-            icon: 'fa-fire',
-            desc: 'Community AI art platform with prompts & models',
-            color: '#06d6a0',
-            async fetch(page = 1, sort = 'Most Reactions', tag = '') {
-                const params = new URLSearchParams({ limit: 24, page, sort, nsfw: 'false', 'projectId': '' });
-                if (tag && tag !== 'all') params.set('tags', tag);
-                const url = `https://civitai.com/api/v1/images?${params}`;
-                const data = await smartFetch(url);
-                if (!data || !data.items) throw new Error('Invalid Civitai response');
-                return {
-                    items: data.items.filter(i => i.meta && i.meta.prompt).map(i => ({
-                        id: `civ-${i.id}`,
-                        imageUrl: i.url,
-                        prompt: i.meta.prompt || '',
-                        negativePrompt: i.meta.negativePrompt || '',
-                        model: i.meta.Model || 'Unknown',
-                        steps: i.meta.steps || 0,
-                        cfgScale: i.meta.cfgScale || 0,
-                        sampler: i.meta.sampler || '',
-                        seed: i.meta.seed || 0,
-                        tags: i.tags || [],
-                        likes: (i.stats && i.stats.likeCount) || 0,
-                        source: 'Civitai',
-                        width: i.width || 512,
-                        height: i.height || 512
-                    })),
-                    nextPage: data.metadata?.nextPage ? page + 1 : null,
-                    total: data.metadata?.totalItems || 0
-                };
+    // Also try search pages with common keywords
+    const searchTerms = ['anime', 'portrait', 'landscape', 'fantasy', 'cyberpunk', 'girl', 'art'];
+    for (const term of searchTerms) {
+        try {
+            const html = await pFetch(`https://www.meigen.ai/search?q=${encodeURIComponent(term)}`, 6000);
+            if (typeof html === 'string') {
+                const items = parseMeigenHTML(html, `search:${term}`);
+                results.push(...items);
             }
-        },
-        lexica: {
-            name: 'Lexica',
-            icon: 'fa-search',
-            desc: 'Stable Diffusion search engine with millions of prompts',
-            color: '#7c3aed',
-            async fetch(query = '', page = 1) {
-                const url = query
-                    ? `https://lexica.art/api/v1/search?q=${encodeURIComponent(query)}`
-                    : `https://lexica.art/api/v1/search?q=art`;
-                const data = await smartFetch(url);
-                if (!data || !data.images) throw new Error('Invalid Lexica response');
-                return {
-                    items: data.images.map(i => ({
-                        id: `lex-${i.id}`,
-                        imageUrl: i.srcSmall || i.src,
-                        prompt: i.prompt || '',
-                        negativePrompt: '',
-                        model: 'Stable Diffusion',
-                        steps: 0, cfgScale: 0, sampler: '', seed: i.seed || 0,
-                        tags: [],
-                        likes: 0,
-                        source: 'Lexica',
-                        width: i.width || 512,
-                        height: i.height || 512
-                    })),
-                    nextPage: null,
-                    total: data.images.length
-                };
-            }
-        },
-        meigen: {
-            name: 'Meigen AI',
-            icon: 'fa-language',
-            desc: 'Asian AI prompt library with curated collections',
-            color: '#f59e0b',
-            async fetch(page = 1) {
-                const url = `https://www.meigen.ai/`;
-                const html = await smartFetch(url);
-                if (typeof html !== 'string') throw new Error('Invalid meigen response');
-                // Try to parse prompts from HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const items = [];
+        } catch { continue; }
+    }
 
-                // Try common selectors for prompt content
-                const promptElements = doc.querySelectorAll('[class*="prompt"], [class*="card"], [class*="item"], article, .gallery-item');
-                promptElements.forEach((el, idx) => {
-                    const text = el.textContent.trim();
-                    if (text && text.length > 20 && text.length < 2000) {
-                        const img = el.querySelector('img');
-                        items.push({
-                            id: `mei-${idx}`,
-                            imageUrl: img ? img.src : '',
-                            prompt: text.substring(0, 500),
-                            negativePrompt: '',
-                            model: 'Various',
-                            steps: 0, cfgScale: 0, sampler: '', seed: 0,
-                            tags: [],
-                            likes: 0,
-                            source: 'Meigen AI',
-                            width: 512, height: 512
+    // Deduplicate by prompt text
+    const seen = new Set();
+    return results.filter(p => {
+        const key = p.prompt.substring(0, 80);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function parseMeigenHTML(html, sourceUrl) {
+    const items = [];
+
+    // Strategy 1: Check for __NEXT_DATA__ (Next.js sites)
+    const nextMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if (nextMatch) {
+        try {
+            const data = JSON.parse(nextMatch[1]);
+            const prompts = extractFromNextData(data);
+            if (prompts.length > 0) return prompts;
+        } catch {}
+    }
+
+    // Strategy 2: Look for JSON in script tags (common in SPA sites)
+    const jsonMatches = html.match(/<script[^>]*>\s*(\{[\s\S]*?"prompt"[\s\S]*?\})\s*<\/script>/g);
+    if (jsonMatches) {
+        for (const jm of jsonMatches) {
+            try {
+                const jsonStr = jm.replace(/<script[^>]*>/,'').replace(/<\/script>/,'');
+                const data = JSON.parse(jsonStr);
+                if (data.prompt) {
+                    items.push(makeMeigenItem(data, sourceUrl));
+                }
+            } catch {}
+        }
+    }
+
+    // Strategy 3: Parse DOM elements
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    // Try various selectors that might contain prompts
+    const selectors = [
+        '[class*="prompt"]', '[class*="card"]', '[class*="item"]',
+        'article', '.gallery-item', '.prompt-card', '.item-card',
+        '[class*="work"]', '[class*="image"]', '.grid-item',
+        '[class*="content"]', 'li[class]', '.list-item'
+    ];
+
+    const found = new Set();
+    for (const sel of selectors) {
+        const els = doc.querySelectorAll(sel);
+        els.forEach((el, idx) => {
+            const text = el.textContent.trim();
+            if (text.length > 30 && text.length < 2000 && !found.has(text.substring(0,60))) {
+                // Check if this looks like a prompt (has descriptive keywords)
+                if (looksLikePrompt(text)) {
+                    found.add(text.substring(0,60));
+                    const img = el.querySelector('img');
+                    const imgSrc = img ? (img.getAttribute('src') || img.getAttribute('data-src') || '') : '';
+                    items.push({
+                        id:`m${sourceUrl.hashCode?.()||0}${idx}`,
+                        img: imgSrc && !imgSrc.startsWith('data:') ? imgSrc : '',
+                        prompt: cleanPrompt(text),
+                        neg:'', model:'Unknown', steps:0, cfg:0, sampler:'', seed:0,
+                        tags:extractTags(text), likes:0, src:'Meigen AI',
+                        w:512, h:512, cat:guessCat(text,[])
+                    });
+                }
+            }
+        });
+        if (items.length >= 5) break; // Enough from one selector
+    }
+
+    // Strategy 4: Look for image alt texts and surrounding text
+    if (items.length === 0) {
+        const imgs = doc.querySelectorAll('img[alt]');
+        imgs.forEach((img, idx) => {
+            const alt = img.getAttribute('alt') || '';
+            const parent = img.closest('a, div, article, li');
+            const parentText = parent ? parent.textContent.trim() : alt;
+            if (parentText.length > 20 && looksLikePrompt(parentText)) {
+                const src = img.getAttribute('src') || img.getAttribute('data-src') || '';
+                items.push({
+                    id:`mi${idx}`,
+                    img: src && !src.startsWith('data:') && src.startsWith('http') ? src : '',
+                    prompt: cleanPrompt(parentText),
+                    neg:'', model:'Unknown', steps:0, cfg:0, sampler:'', seed:0,
+                    tags:extractTags(parentText), likes:0, src:'Meigen AI',
+                    w:512, h:512, cat:guessCat(parentText,[])
+                });
+            }
+        });
+    }
+
+    return items;
+}
+
+function extractFromNextData(data, depth=0) {
+    if (depth > 5) return [];
+    const items = [];
+    if (data && typeof data === 'object') {
+        // Look for prompt arrays
+        if (Array.isArray(data)) {
+            for (const item of data) {
+                if (item && item.prompt && typeof item.prompt === 'string' && item.prompt.length > 15) {
+                    items.push(makeMeigenItem(item, 'nextdata'));
+                }
+                items.push(...extractFromNextData(item, depth+1));
+            }
+        } else {
+            for (const key of Object.keys(data)) {
+                if (key === 'prompts' || key === 'items' || key === 'data' || key === 'list' || key === 'results') {
+                    if (Array.isArray(data[key])) {
+                        for (const item of data[key]) {
+                            if (item && item.prompt && typeof item.prompt === 'string') {
+                                items.push(makeMeigenItem(item, 'nextdata'));
+                            }
+                        }
+                    }
+                }
+                if (typeof data[key] === 'object' && data[key]) {
+                    items.push(...extractFromNextData(data[key], depth+1));
+                }
+            }
+        }
+    }
+    return items;
+}
+
+function makeMeigenItem(data, src) {
+    return {
+        id:`mn${Math.random().toString(36).substr(2,8)}`,
+        img: data.image || data.imageUrl || data.src || data.thumbnail || data.img || '',
+        prompt: typeof data.prompt === 'string' ? data.prompt : JSON.stringify(data.prompt),
+        neg: data.negativePrompt || data.neg_prompt || data.negative || '',
+        model: data.model || data.modelName || 'Unknown',
+        steps: data.steps || 0, cfg: data.cfgScale || data.cfg || 0,
+        sampler: data.sampler || '', seed: data.seed || 0,
+        tags: data.tags || [], likes: data.likes || data.likesCount || 0,
+        src:'Meigen AI', w: data.width || 512, h: data.height || 512,
+        cat: guessCat(typeof data.prompt === 'string' ? data.prompt : '', data.tags || [])
+    };
+}
+
+function looksLikePrompt(text) {
+    const keywords = ['detailed','art','style','lighting','digital','painting','render','8k','4k',
+        'cinematic','photorealistic','illustration','concept','anime','portrait','landscape',
+        'fantasy','realistic','quality','masterpiece','beautiful','dramatic','vibrant',
+        'highly','intricate','ultra','sharp','focus','studio','professional','creative',
+        'photo','image','drawing','sketch','design','effect','color','texture','scene',
+        'character','background','atmosphere','mood','aesthetic','comprehensive',
+        'masterpiece','best','amazing','stunning','gorgeous','elegant','ethereal'];
+    const lower = text.toLowerCase();
+    return keywords.some(k => lower.includes(k)) && text.length > 25;
+}
+
+function cleanPrompt(text) {
+    return text.replace(/\s+/g,' ').replace(/[^\x20-\x7E\u0080-\uFFFF]/g,' ').trim().substring(0,600);
+}
+
+function extractTags(text) {
+    const tagWords = ['anime','portrait','landscape','fantasy','scifi','sci-fi','cyberpunk',
+        'steampunk','horror','romantic','minimalist','abstract','3d','photo','realistic',
+        'painting','illustration','concept art','character design','environment',
+        'dragon','robot','girl','boy','cat','dog','forest','city','space','ocean'];
+    const lower = text.toLowerCase();
+    return tagWords.filter(t => lower.includes(t)).slice(0,5);
+}
+
+// ============================================================
+// GITHUB PROMPT REPOS — Free raw JSON/text files
+// ============================================================
+async function fetchGithubPrompts() {
+    const results = [];
+    // These are raw GitHub URLs that serve JSON - no CORS issues
+    const repos = [
+        'https://raw.githubusercontent.com/DiamondDevs/stable-diffusion-prompt-generator/main/data/prompt_library.json',
+        'https://raw.githubusercontent.com/williammorrow/stable-diffusion-prompts/main/prompts.json',
+        'https://raw.githubusercontent.com/SeshatMoot/SD-Prompt-Builder/main/presets/presets.json'
+    ];
+
+    for (const url of repos) {
+        try {
+            const data = await pFetch(url, 6000);
+            if (Array.isArray(data)) {
+                data.forEach((item, idx) => {
+                    const promptText = item.prompt || item.text || item.content || (typeof item === 'string' ? item : '');
+                    if (promptText && promptText.length > 15) {
+                        results.push({
+                            id:`g${idx}${Math.random().toString(36).substr(2,4)}`,
+                            img: item.image || item.url || '',
+                            prompt: promptText,
+                            neg: item.negative || item.negative_prompt || '',
+                            model: item.model || 'Stable Diffusion',
+                            steps: item.steps || 0, cfg: item.cfg || item.cfgScale || 0,
+                            sampler: item.sampler || '', seed: item.seed || 0,
+                            tags: item.tags || [], likes: 0, src:'GitHub',
+                            w:512, h:512, cat: guessCat(promptText, item.tags||[])
                         });
                     }
                 });
-
-                if (items.length === 0) throw new Error('Could not parse meigen.ai content');
-                return { items, nextPage: null, total: items.length };
-            }
-        },
-        builtin: {
-            name: 'Built-in Library',
-            icon: 'fa-book',
-            desc: 'Curated collection of 30 high-quality prompts, always available',
-            color: '#ec4899',
-            async fetch(page = 1, sort = '', tag = 'all') {
-                let items = [...BUILTIN_PROMPTS];
-                if (tag && tag !== 'all') {
-                    items = items.filter(p => p.category === tag || p.tags.includes(tag));
-                }
-                return { items, nextPage: null, total: items.length };
-            }
-        }
-    };
-
-    // ==========================================
-    // TOAST NOTIFICATIONS
-    // ==========================================
-    function showToast(message, icon = 'fa-check') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerHTML = `<i class="fas ${icon}" style="color: var(--accent);"></i> ${message}`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 2600);
-    }
-
-    // ==========================================
-    // SAVE / UNSAVE PROMPTS
-    // ==========================================
-    function isSaved(id) {
-        return State.savedPrompts.some(p => p.id === id);
-    }
-
-    function toggleSave(prompt) {
-        if (isSaved(prompt.id)) {
-            State.savedPrompts = State.savedPrompts.filter(p => p.id !== prompt.id);
-            showToast('Removed from saved', 'fa-bookmark');
-        } else {
-            State.savedPrompts.unshift({...prompt});
-            showToast('Saved to collection', 'fa-bookmark');
-        }
-        localStorage.setItem('pv_saved', JSON.stringify(State.savedPrompts));
-        updateSavedNotif();
-        // Re-render current view
-        if (State.currentView === 'saved') switchView('saved');
-    }
-
-    function updateSavedNotif() {
-        const dot = document.getElementById('savedNotif');
-        dot.style.display = State.savedPrompts.length > 0 ? 'block' : 'none';
-    }
-
-    // ==========================================
-    // COPY TO CLIPBOARD
-    // ==========================================
-    async function copyPrompt(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            showToast('Prompt copied to clipboard', 'fa-copy');
-        } catch {
-            // Fallback
-            const ta = document.createElement('textarea');
-            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-            document.body.appendChild(ta); ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            showToast('Prompt copied', 'fa-copy');
-        }
-    }
-
-    // ==========================================
-    // DETAIL MODAL
-    // ==========================================
-    function openDetail(prompt) {
-        const modal = document.getElementById('detailModal');
-        const content = document.getElementById('detailContent');
-        const saved = isSaved(prompt.id);
-
-        content.innerHTML = `
-            <div style="position: sticky; top: 0; z-index: 10; background: rgba(11,11,18,0.9); backdrop-filter: blur(16px); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="closeDetail()" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--text); cursor: pointer;">
-                    <i class="fas fa-arrow-left text-sm"></i>
-                </button>
-                <div class="flex gap-2">
-                    <button onclick="toggleSave(State.prompts.find(p=>p.id==='${prompt.id}') || State.savedPrompts.find(p=>p.id==='${prompt.id}'))" class="bookmark-btn w-9 h-9 rounded-xl flex items-center justify-center ${saved ? 'saved' : ''}" style="background: var(--bg3); border: 1px solid var(--border); color: ${saved ? '#f59e0b' : 'var(--muted)'}; cursor: pointer;" id="detailBookmark">
-                        <i class="fas fa-bookmark text-sm"></i>
-                    </button>
-                    <button onclick="sharePrompt('${prompt.id}')" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer;">
-                        <i class="fas fa-share-nodes text-sm"></i>
-                    </button>
-                </div>
-            </div>
-
-            ${prompt.imageUrl ? `
-                <div style="background: var(--bg2); display: flex; align-items: center; justify-content: center; min-height: 280px;">
-                    <img src="${prompt.imageUrl}" alt="AI generated image" class="detail-img" onerror="this.style.display='none'" loading="lazy">
-                </div>
-            ` : ''}
-
-            <div style="padding: 20px;">
-                <!-- Source badge -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-                    <span style="background: rgba(6,214,160,0.12); color: var(--accent); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(6,214,160,0.25);">
-                        ${prompt.source || 'Unknown'}
-                    </span>
-                    ${prompt.likes ? `<span style="color: var(--muted); font-size: 12px;"><i class="fas fa-heart" style="color: #f43f5e;"></i> ${prompt.likes}</span>` : ''}
-                </div>
-
-                <!-- Prompt text -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="font-size: 13px; font-weight: 600; color: var(--text);">Prompt</span>
-                        <button onclick="copyPrompt(\`${prompt.prompt.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px;">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
-                    <div class="prompt-text-box">${escapeHtml(prompt.prompt)}</div>
-                </div>
-
-                ${prompt.negativePrompt ? `
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="font-size: 13px; font-weight: 600; color: var(--text);">Negative Prompt</span>
-                        <button onclick="copyPrompt(\`${prompt.negativePrompt.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px;">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
-                    <div class="prompt-text-box" style="border-color: rgba(244,63,94,0.2); background: rgba(244,63,94,0.05);">${escapeHtml(prompt.negativePrompt)}</div>
-                </div>
-                ` : ''}
-
-                <!-- Parameters -->
-                ${(prompt.model || prompt.steps || prompt.cfgScale || prompt.sampler) ? `
-                <div style="margin-bottom: 20px;">
-                    <span style="font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 10px;">Parameters</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                        ${prompt.model ? `<span class="param-tag"><i class="fas fa-cube" style="color: var(--accent); font-size: 10px;"></i> ${escapeHtml(prompt.model)}</span>` : ''}
-                        ${prompt.steps ? `<span class="param-tag"><i class="fas fa-shoe-prints" style="color: var(--accent2); font-size: 10px;"></i> ${prompt.steps} steps</span>` : ''}
-                        ${prompt.cfgScale ? `<span class="param-tag"><i class="fas fa-sliders" style="color: #f59e0b; font-size: 10px;"></i> CFG ${prompt.cfgScale}</span>` : ''}
-                        ${prompt.sampler ? `<span class="param-tag"><i class="fas fa-shuffle" style="color: #06b6d4; font-size: 10px;"></i> ${escapeHtml(prompt.sampler)}</span>` : ''}
-                        ${prompt.seed ? `<span class="param-tag"><i class="fas fa-seedling" style="color: #a3e635; font-size: 10px;"></i> Seed: ${prompt.seed}</span>` : ''}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Tags -->
-                ${prompt.tags && prompt.tags.length > 0 ? `
-                <div style="margin-bottom: 20px;">
-                    <span style="font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 10px;">Tags</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                        ${prompt.tags.map(t => `<span style="padding: 4px 10px; border-radius: 8px; font-size: 11px; background: var(--bg3); color: var(--muted); border: 1px solid var(--border);">#${escapeHtml(typeof t === 'string' ? t : t.name || '')}</span>`).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Action buttons -->
-                <div style="display: flex; gap: 10px; margin-top: 24px;">
-                    <button onclick="copyPrompt(\`${prompt.prompt.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)" class="action-btn primary" style="flex: 1;">
-                        <i class="fas fa-copy"></i> Copy Full Prompt
-                    </button>
-                    <button onclick="toggleSave(State.prompts.find(p=>p.id==='${prompt.id}') || State.savedPrompts.find(p=>p.id==='${prompt.id}'))" class="action-btn secondary" style="flex: 1;">
-                        <i class="fas fa-bookmark"></i> ${saved ? 'Unsave' : 'Save'}
-                    </button>
-                </div>
-            </div>
-        `;
-
-        modal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeDetail() {
-        document.getElementById('detailModal').classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    function sharePrompt(id) {
-        const prompt = State.prompts.find(p => p.id === id) || State.savedPrompts.find(p => p.id === id);
-        if (!prompt) return;
-        if (navigator.share) {
-            navigator.share({ title: 'AI Prompt', text: prompt.prompt });
-        } else {
-            copyPrompt(prompt.prompt);
-        }
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // ==========================================
-    // SOURCE SELECTOR
-    // ==========================================
-    function showSourceSelector() {
-        const modal = document.getElementById('sourceModal');
-        const list = document.getElementById('sourceList');
-
-        list.innerHTML = Object.entries(SOURCES).map(([key, src]) => `
-            <div onclick="selectSource('${key}')" style="
-                padding: 16px; border-radius: 14px; cursor: pointer;
-                background: ${State.currentSource === key ? 'rgba(6,214,160,0.08)' : 'var(--bg2)'};
-                border: 1px solid ${State.currentSource === key ? 'rgba(6,214,160,0.35)' : 'var(--border)'};
-                transition: all 0.2s ease; display: flex; align-items: center; gap: 14px;
-            ">
-                <div style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: ${src.color}22; color: ${src.color}; flex-shrink: 0;">
-                    <i class="fas ${src.icon}"></i>
-                </div>
-                <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 600; font-size: 14px; color: var(--text);">${src.name}</div>
-                    <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">${src.desc}</div>
-                </div>
-                ${State.currentSource === key ? `<i class="fas fa-check-circle" style="color: var(--accent); font-size: 18px;"></i>` : ''}
-            </div>
-        `).join('');
-
-        modal.classList.add('open');
-    }
-
-    function closeSourceSelector() {
-        document.getElementById('sourceModal').classList.remove('open');
-    }
-
-    async function selectSource(key) {
-        State.currentSource = key;
-        State.prompts = [];
-        State.currentPage = 1;
-        State.hasMore = true;
-        closeSourceSelector();
-        showToast(`Switched to ${SOURCES[key].name}`, 'fa-database');
-        await loadPrompts();
-        renderCurrentView();
-    }
-
-    // ==========================================
-    // LOAD PROMPTS FROM SOURCE
-    // ==========================================
-    async function loadPrompts(append = false) {
-        if (State.loading) return;
-        State.loading = true;
-
-        const source = SOURCES[State.currentSource];
-        try {
-            let result;
-            if (State.currentSource === 'civitai') {
-                const sortMap = { trending: 'Most Reactions', newest: 'Newest', most_comments: 'Most Comments' };
-                const sort = sortMap[State.sortBy] || 'Most Reactions';
-                const tag = State.currentCategory !== 'all' ? State.currentCategory : '';
-                result = await source.fetch(State.currentPage, sort, tag);
-            } else if (State.currentSource === 'lexica') {
-                result = await source.fetch(State.searchQuery || 'art', State.currentPage);
-            } else if (State.currentSource === 'meigen') {
-                result = await source.fetch(State.currentPage);
-            } else {
-                result = await source.fetch(State.currentPage, '', State.currentCategory);
-            }
-
-            if (append) {
-                State.prompts = [...State.prompts, ...result.items];
-            } else {
-                State.prompts = result.items;
-            }
-            State.hasMore = result.nextPage !== null;
-        } catch(e) {
-            console.warn('Source fetch failed, falling back to built-in:', e.message);
-            if (!append) {
-                // Fallback to built-in
-                const fallback = await SOURCES.builtin.fetch(1, '', State.currentCategory);
-                State.prompts = fallback.items;
-                State.hasMore = false;
-                if (State.currentSource !== 'builtin') {
-                    showToast('Using built-in library (source unavailable)', 'fa-triangle-exclamation');
+            } else if (data && typeof data === 'object') {
+                // Might be categorized
+                for (const [cat, prompts] of Object.entries(data)) {
+                    if (Array.isArray(prompts)) {
+                        prompts.forEach((item, idx) => {
+                            const promptText = typeof item === 'string' ? item : (item.prompt || item.text || '');
+                            if (promptText && promptText.length > 15) {
+                                results.push({
+                                    id:`gc${idx}${Math.random().toString(36).substr(2,4)}`,
+                                    img: typeof item === 'object' ? (item.image||item.url||'') : '',
+                                    prompt: promptText,
+                                    neg: typeof item === 'object' ? (item.negative||'') : '',
+                                    model: typeof item === 'object' ? (item.model||'Stable Diffusion') : 'Stable Diffusion',
+                                    steps:0,cfg:0,sampler:'',seed:0,
+                                    tags: typeof item === 'object' ? (item.tags||[cat]) : [cat],
+                                    likes:0,src:'GitHub',w:512,h:512,cat:cat
+                                });
+                            }
+                        });
+                    }
                 }
             }
-        }
-
-        State.loading = false;
+        } catch { continue; }
     }
+    return results;
+}
 
-    // ==========================================
-    // RENDER HELPERS
-    // ==========================================
-    function createPromptCard(prompt, index) {
-        const saved = isSaved(prompt.id);
-        const imgSrc = prompt.imageUrl || '';
-        const hasImage = imgSrc && !State.imageErrors.has(prompt.id);
+// ============================================================
+// CATEGORY GUESSER
+// ============================================================
+function guessCat(prompt, tags) {
+    const p = prompt.toLowerCase();
+    const t = tags.map(x=>(typeof x==='string'?x:x.name||'').toLowerCase());
+    const all = p + ' ' + t.join(' ');
+    if(/anime|manga|waifu|cel.shad|neon genesis/.test(all)) return 'anime';
+    if(/portrait|face|girl|boy|woman|man|person|eyes|hair/.test(all)&&!/landscape|city|forest|mountain|ocean|sea/.test(all)) return 'portrait';
+    if(/landscape|mountain|forest|ocean|sea|sunset|sunrise|lake|river|valley|field|meadow/.test(all)) return 'landscape';
+    if(/fantasy|dragon|magic|wizard|elf|dwarf|fairy|enchanted|mythical|sword|castle/.test(all)) return 'fantasy';
+    if(/sci.?fi|cyberpunk|space|robot|mech|futuristic|neon.city|spaceship|alien/.test(all)) return 'scifi';
+    if(/photo|camera|lens|film|bokeh|depth.of.field|shot|photography|dslr/.test(all)) return 'photo';
+    if(/abstract|fluid|fractal|geometric|pattern|texture|surreal/.test(all)) return 'abstract';
+    if(/3d|render|blender|cinema.4d|octane|unreal|voxel|low.poly/.test(all)) return '3d';
+    if(/concept|design|environment|vehicle|weapon|armor|prop/.test(all)) return 'concept';
+    if(/minimal|minimalist|clean|simple|flat|icon|logo/.test(all)) return 'minimal';
+    if(/character|warrior|knight|samurai|witch|princess|hero/.test(all)) return 'character';
+    return 'concept';
+}
 
-        return `
-            <div class="prompt-card animate-slide" style="animation-delay: ${Math.min(index * 50, 400)}ms;" onclick="openDetail(State.prompts[${State.prompts.indexOf(prompt)}] || State.savedPrompts.find(p=>p.id==='${prompt.id}'))">
-                ${hasImage ? `
-                    <div style="position: relative; overflow: hidden;">
-                        <img src="${imgSrc}" alt="AI art" class="card-img" loading="lazy"
-                            onerror="this.style.display='none'; State.imageErrors.add('${prompt.id}'); this.nextElementSibling.style.display='flex';"
-                        >
-                        <div class="img-placeholder" style="display:none; aspect-ratio: 1/1;">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        <div class="card-overlay">
-                            <p style="font-size: 11px; color: rgba(255,255,255,0.9); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
-                                ${escapeHtml(prompt.prompt.substring(0, 120))}${prompt.prompt.length > 120 ? '...' : ''}
-                            </p>
-                        </div>
-                    </div>
-                ` : `
-                    <div class="img-placeholder" style="aspect-ratio: 1/1; position: relative;">
-                        <i class="fas fa-wand-magic-sparkles" style="font-size: 32px; opacity: 0.2;"></i>
-                        <div class="card-overlay">
-                            <p style="font-size: 11px; color: rgba(255,255,255,0.9); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;">
-                                ${escapeHtml(prompt.prompt.substring(0, 200))}${prompt.prompt.length > 200 ? '...' : ''}
-                            </p>
-                        </div>
-                    </div>
-                `}
-                <div style="padding: 10px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 10px; color: var(--muted); background: var(--bg3); padding: 2px 8px; border-radius: 6px;">
-                            ${escapeHtml(prompt.source || 'Built-in')}
-                        </span>
-                        <button class="bookmark-btn ${saved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(State.prompts[${State.prompts.indexOf(prompt)}] || State.savedPrompts.find(p=>p.id==='${prompt.id}'))" style="background: none; border: none; color: ${saved ? '#f59e0b' : 'var(--muted)'}; cursor: pointer; font-size: 14px; padding: 4px;" aria-label="${saved ? 'Unsave' : 'Save'}">
-                            <i class="fas fa-bookmark"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
+// ============================================================
+// MASSIVE BUILT-IN LIBRARY (80+ prompts)
+// ============================================================
+const BUILTIN = [
+{id:'b1',prompt:'Serene Japanese garden at twilight, stone lanterns glowing warmly, cherry blossom petals drifting across a koi pond, mist rising from the water, ultra detailed, cinematic lighting, 8k',neg:'blurry, low quality, distorted',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['japanese','garden','twilight']},
+{id:'b2',prompt:'Cyberpunk street vendor selling neon noodles, rain-slicked pavement reflecting holographic signs, steam rising from food stall, crowded alleyway, blade runner aesthetic, volumetric lighting',neg:'ugly, deformed, blurry',cat:'scifi',model:'SDXL',steps:35,cfg:8,sampler:'Euler a',tags:['cyberpunk','neon','rain']},
+{id:'b3',prompt:'Ethereal forest spirit portrait, translucent glowing skin, hair made of moonlight and fireflies, crown of crystal antlers, dark enchanted forest background, fantasy art, detailed face',neg:'ugly, deformed face, extra limbs',cat:'fantasy',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ SDE Karras',tags:['spirit','forest','ethereal']},
+{id:'b4',prompt:'Macro photography of morning dewdrops on spider web, golden hour sunlight refracting through each drop creating tiny rainbows, bokeh background of wildflower meadow, hyperrealistic, 8k',neg:'blurry, grainy, overexposed',cat:'photo',model:'SDXL',steps:25,cfg:6,sampler:'DPM++ 2M Karras',tags:['macro','dew','golden hour']},
+{id:'b5',prompt:'Massive floating crystal city above clouds, bridges of pure light connecting towers, airships docking at crystal platforms, sunset painting sky amber and violet, epic scale concept art',neg:'low quality, pixelated, ugly',cat:'fantasy',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['crystal','city','floating']},
+{id:'b6',prompt:'Steampunk clockwork owl perched on brass gear, intricate mechanical parts visible through glass panels, copper and gold tones, dark moody background, detailed mechanical illustration',neg:'modern, plastic, blurry',cat:'3d',model:'SDXL',steps:30,cfg:7,sampler:'Euler a',tags:['steampunk','owl','mechanical']},
+{id:'b7',prompt:'Underwater ancient temple ruins overgrown with bioluminescent coral, schools of tropical fish swimming through marble columns, sunbeams filtering through clear water, mystical atmosphere',neg:'surface, dry, blurry',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['underwater','temple','bioluminescent']},
+{id:'b8',prompt:'Minimalist architectural photography, concrete staircase with dramatic shadows, geometric patterns, black and white with one red accent element, clean composition, cinematic perspective',neg:'cluttered, colorful, messy',cat:'minimal',model:'SDXL',steps:22,cfg:6,sampler:'DPM++ 2M',tags:['architecture','minimalist','shadows']},
+{id:'b9',prompt:'Anime girl warrior standing on cliff edge, flowing white hair in wind, ornate samurai armor with cherry blossom engravings, katana drawn, dramatic sunset, studio ghibli inspired, cel shaded',neg:'realistic, photographic, western style',cat:'anime',model:'Anything V5',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['warrior','sunset','armor']},
+{id:'b10',prompt:'Cozy cabin interior during snowstorm, roaring fireplace casting warm orange light, stacks of old books, steaming mug of cocoa on wooden table, fluffy cat sleeping on rug, hygge aesthetic',neg:'cold colors, modern, sterile',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['cabin','cozy','fireplace']},
+{id:'b11',prompt:'Abstract fluid art, molten gold and deep ocean blue swirling together, marble texture, high contrast, organic flowing shapes, luxurious feel, 4k texture, metallic sheen',neg:'figurative, realistic, messy',cat:'abstract',model:'SDXL',steps:25,cfg:8,sampler:'DPM++ SDE',tags:['fluid','gold','marble']},
+{id:'b12',prompt:'Astronaut floating in deep space surrounded by nebula, helmet visor reflecting distant galaxies, tether line trailing into darkness, photorealistic space suit, cosmic color palette, cinematic',neg:'cartoon, low detail, earth',cat:'scifi',model:'SDXL',steps:35,cfg:7,sampler:'DPM++ 2M Karras',tags:['astronaut','space','nebula']},
+{id:'b13',prompt:'Dragon made entirely of crystalline ice, perched atop frozen mountain peak, aurora borealis in sky, ice crystals refracting rainbow light, majestic and powerful, fantasy illustration',neg:'fire, warm colors, low detail',cat:'fantasy',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['dragon','ice','aurora']},
+{id:'b14',prompt:'Vintage vinyl record store interior, warm amber lighting, floor-to-ceiling record bins, analog equipment, 1970s aesthetic, film grain, nostalgic mood, documentary photography',neg:'modern, digital, clean',cat:'photo',model:'SDXL',steps:24,cfg:6.5,sampler:'DPM++ 2M Karras',tags:['vintage','records','nostalgic']},
+{id:'b15',prompt:'Biomechanical humanoid, half organic half machine, exposed circuitry merging with muscle fiber, glowing neural pathways, dark laboratory, HR Giger inspired, intricate detail',neg:'cute, bright, cartoon',cat:'scifi',model:'SDXL',steps:35,cfg:8,sampler:'DPM++ SDE Karras',tags:['biomechanical','cyborg','giger']},
+{id:'b16',prompt:'Enchanted library with books flying through air, magical golden sparkles, spiral staircases reaching into clouds, ancient tome open on reading stand with glowing runes, warm candlelight',neg:'modern library, empty, dark',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['library','magic','books']},
+{id:'b17',prompt:'Product photography of luxury perfume bottle, dramatic side lighting, liquid amber inside crystal bottle, mist and golden particles in air, dark reflective surface, commercial quality',neg:'amateur, blurry, cheap',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['product','luxury','perfume']},
+{id:'b18',prompt:'Post-apocalyptic greenhouse, nature reclaiming glass dome, vines breaking through steel frames, flowers blooming from rusted cars, sunlight through cracked panels, hopeful atmosphere',neg:'pristine, clean, brand new',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['post-apocalyptic','nature','greenhouse']},
+{id:'b19',prompt:'Traditional Chinese ink wash painting of mountains emerging from sea of clouds, lone fisherman in small boat below, pine trees clinging to cliffs, minimalist composition, wabi-sabi aesthetic',neg:'western style, photorealistic, colorful',cat:'minimal',model:'SDXL',steps:20,cfg:5.5,sampler:'Euler a',tags:['chinese','ink wash','mountains']},
+{id:'b20',prompt:'Alien botanical garden on distant planet, bioluminescent plants in impossible colors, floating spores, crystal formations growing like trees, two moons in violet sky, otherworldly paradise',neg:'earth plants, human, ordinary',cat:'scifi',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['alien','botanical','bioluminescent']},
+{id:'b21',prompt:'Isometric voxel art of medieval fantasy village, tiny adventurers in town square, blacksmith forge with glowing embers, windmill turning, flower gardens, cute and colorful, game asset',neg:'realistic, dark, gritty',cat:'3d',model:'SDXL',steps:25,cfg:7,sampler:'Euler a',tags:['voxel','isometric','medieval']},
+{id:'b22',prompt:'Baroque angel with six wings descending through golden clouds, dramatic chiaroscuro lighting, oil painting style inspired by Caravaggio, ornate halo, flowing robes, divine radiance',neg:'modern, cartoon, anime',cat:'portrait',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['angel','baroque','painting']},
+{id:'b23',prompt:'Neon-drenched Tokyo alley at 3am, vending machine glow, rain creating rivers of color on ground, silhouette of lone figure with umbrella, reflections everywhere, cyber-noir, film still',neg:'daytime, sunny, clean',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['tokyo','neon','rain']},
+{id:'b24',prompt:'Cute robot tending rooftop garden, watering can in mechanical hand, small sunflowers in terra cotta pots, city skyline at sunset, warm and wholesome, pixar style 3D render',neg:'scary, dark, realistic, horror',cat:'3d',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M',tags:['robot','garden','cute']},
+{id:'b25',prompt:'Ancient Norse rune stones in misty forest clearing, carved symbols faintly glowing blue, ravens perched on top, moss and lichen covered surfaces, cinematic fog, mystical viking atmosphere',neg:'modern, clean, bright',cat:'landscape',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['norse','runes','mystical']},
+{id:'b26',prompt:'Deep sea anglerfish with elaborate bioluminescent lure, abyssal plain background with marine snow, otherworldly deep ocean creatures in distance, dramatic underwater photography',neg:'surface, bright, shallow',cat:'photo',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['deep sea','bioluminescent','anglerfish']},
+{id:'b27',prompt:'Massive tree of life growing from tiny island in endless ocean, roots visible through crystal clear water, golden leaves falling into sea, birds circling canopy, surreal fantasy, epic scale',neg:'realistic, small, ordinary',cat:'fantasy',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ SDE Karras',tags:['tree of life','ocean','surreal']},
+{id:'b28',prompt:'Samurai standing in field of tall grass, armor catching wind, dramatic backlit composition, red sun on horizon, long shadow stretching forward, ink wash meets digital painting, powerful stance',neg:'modern, casual, bright',cat:'portrait',model:'SDXL',steps:28,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['samurai','dramatic','backlit']},
+{id:'b29',prompt:'Retro-futuristic space station interior, 1960s vision of the future, curved plastic furniture, bold primary colors, wall screens showing retro graphics, optimism and wonder, vintage sci-fi',neg:'modern sci-fi, dark, gritty',cat:'concept',model:'SDXL',steps:26,cfg:7,sampler:'Euler a',tags:['retro-futuristic','space','1960s']},
+{id:'b30',prompt:'Art nouveau decorative border with interlocking irises and dragonflies, gold leaf accents on deep emerald background, Alphonse Mucha inspired, elegant line work, ornamental design',neg:'photographic, 3D, rough',cat:'abstract',model:'SDXL',steps:24,cfg:7,sampler:'Euler a',tags:['art nouveau','decorative','gold']},
+{id:'b31',prompt:'Werewolf transformation sequence in moonlit forest, halfway between man and beast, fur growing across skin, clothes tearing, howling at full moon, dramatic horror art, dark atmosphere, detailed',neg:'cute, cartoon, bright, low detail',cat:'character',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['werewolf','horror','moonlight']},
+{id:'b32',prompt:'Steampunk airship battle above Victorian London, brass and copper airships with propellers, smoke and steam clouds, big ben in background, dramatic sky, golden hour, cinematic wide shot',neg:'modern, clean, digital',cat:'concept',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['steampunk','airship','victorian']},
+{id:'b33',prompt:'Ethereal underwater wedding ceremony, bride in flowing white gown floating weightless, bioluminescent jellyfish as lanterns, coral arch decorated with pearls, guests in mermaid attire, dreamlike',neg:'dry, ordinary, church, indoor',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ SDE Karras',tags:['underwater','wedding','ethereal']},
+{id:'b34',prompt:'Cinematic close-up of wolf eyes in snowstorm, ice crystals on fur, amber eyes glowing with determination, shallow depth of field, national geographic quality, intense and powerful',neg:'cartoon, anime, low detail, blurry',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['wolf','snowstorm','close-up']},
+{id:'b35',prompt:'Abandoned space station corridor overgrown with alien vegetation, emergency lights flickering, roots breaking through metal walls, mysterious alien flowers blooming from ceiling panels, eerie atmosphere',neg:'clean, new, bright, cheerful',cat:'scifi',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['abandoned','space station','alien']},
+{id:'b36',prompt:'Miniature fairy village inside a hollow tree trunk, tiny glowing mushroom houses, acorn cap roofs, firefly street lamps, cobblestone paths made of seeds, magical and whimsical, tilt-shift photography',neg:'large, human, modern, dark',cat:'fantasy',model:'SDXL',steps:28,cfg:7,sampler:'Euler a',tags:['fairy','miniature','whimsical']},
+{id:'b37',prompt:'Cinematic car chase through neon-lit tunnel, motion blur, sports car reflecting city lights, sparks flying from undercarriage, low angle shot, night time, Fast and Furious aesthetic, dramatic',neg:'slow, parked, daytime, boring',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['car','neon','chase']},
+{id:'b38',prompt:'Ancient Egyptian goddess Bastet coming to life from hieroglyphic wall carving, gold leaf peeling off, sand swirling, cat-headed figure emerging, torchlight, temple interior, mystical atmosphere',neg:'modern, cartoon, low detail',cat:'fantasy',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['egyptian','goddess','ancient']},
+{id:'b39',prompt:'Photorealistic glass bottle containing a tiny storm, lightning flashing inside, miniature clouds, rain against glass walls, sitting on wooden table, moody lighting, macro photography, surreal',neg:'plastic, blurry, simple',cat:'photo',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['glass','storm','macro']},
+{id:'b40',prompt:'Gothic vampire queen on obsidian throne, flowing black lace gown, pale skin, crimson lips, cathedral window casting colored light, blood red wine glass, dark fantasy portrait, renaissance painting style',neg:'bright, cheerful, modern, cute',cat:'portrait',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['vampire','gothic','dark']},
+{id:'b41',prompt:'Volcanic forge inside a mountain, enormous anvil glowing red hot, dwarf blacksmith hammering mythical sword, sparks flying, rivers of lava in background, epic fantasy, dramatic lighting, detailed',neg:'modern, simple, bright, clean',cat:'character',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['forge','dwarf','volcanic']},
+{id:'b42',prompt:'Zen rock garden from above, raked sand patterns creating spiral designs, perfectly placed moss-covered boulders, cherry petal falling, meditative calm, aerial view, soft morning light, minimalist',neg:'colorful, busy, chaotic, dark',cat:'minimal',model:'SDXL',steps:22,cfg:6,sampler:'Euler a',tags:['zen','rock garden','aerial']},
+{id:'b43',prompt:'Cyberpunk geisha with LED kimono, holographic hair pins, neon reflections in rain puddles, neon pink and cyan, traditional meets future, detailed face, neon district background, portrait',neg:'historical, plain, boring, low detail',cat:'anime',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['geisha','cyberpunk','neon']},
+{id:'b44',prompt:'Surreal melting clock on barren tree branch, Salvador Dali inspired, dreamlike desert landscape, distorted perspective, warm golden tones, existential atmosphere, hyperrealistic rendering',neg:'normal clock, photorealistic, boring',cat:'abstract',model:'SDXL',steps:28,cfg:8,sampler:'DPM++ SDE',tags:['surreal','dali','melting']},
+{id:'b45',prompt:'Massive mecha robot rising from ocean, water cascading off armor plates, sunset backlighting, military fleet in background, pilot visible in cockpit, neon glow from engine vents, anime style, epic scale',neg:'small, weak, blurry, western',cat:'anime',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['mecha','robot','ocean']},
+{id:'b46',prompt:'Ghost ship sailing through aurora borealis, tattered sails glowing ethereal green, spectral crew visible at rigging, sea reflecting northern lights, hauntingly beautiful, maritime fantasy, cinematic',neg:'modern ship, bright, ordinary',cat:'fantasy',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ SDE Karras',tags:['ghost ship','aurora','maritime']},
+{id:'b47',prompt:'Cat wizard studying spellbook in cozy tower room, tiny spectacles on nose, floating candles, potion bottles bubbling, shelves overflowing with magical artifacts, warm firelight, whimsical illustration',neg:'realistic, dark, scary, dog',cat:'character',model:'SDXL',steps:26,cfg:7,sampler:'Euler a',tags:['cat','wizard','cozy']},
+{id:'b48',prompt:'Futuristic Tokyo at street level, holographic advertisements, autonomous vehicles, drone delivery, rain and neon, umbrellas, crowd of diverse cyberpunk citizens, depth of field, cinematic, 8k',neg:'historical, empty, rural, low detail',cat:'scifi',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['tokyo','futuristic','neon']},
+{id:'b49',prompt:'Sandworm erupting from desert, massive scale, Dune inspired, spice cloud, riders on its back, dramatic sky, golden sand particles, epic sci-fi concept art, cinematic composition',neg:'small, cute, colorful, indoor',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['sandworm','desert','epic']},
+{id:'b50',prompt:'Crystal cave interior, enormous amethyst geode walls, underground lake reflecting purple light, stalactites, explorer with torch providing warm contrast, fantasy landscape, photorealistic, 8k',neg:'surface, outdoor, ordinary, dark without color',cat:'landscape',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['crystal','cave','amethyst']},
+{id:'b51',prompt:'Witchs cottage in autumn forest, thatched roof with herbs drying, broomstick by door, black cat on fence, smoke from crooked chimney, golden leaves falling, warm and inviting, storybook illustration',neg:'modern, dark, scary, urban',cat:'fantasy',model:'SDXL',steps:28,cfg:7,sampler:'Euler a',tags:['witch','cottage','autumn']},
+{id:'b52',prompt:'Neural network visualization made physical, glowing synapses floating in dark void, data flowing as streams of light, brain-like structure made of glass and fiber optics, sci-fi abstract, 8k render',neg:'organic brain, messy, blurry, simple',cat:'abstract',model:'SDXL',steps:30,cfg:8,sampler:'DPM++ SDE Karras',tags:['neural network','data','abstract']},
+{id:'b53',prompt:'Valiant knight kneeling before ancient sword in stone, cathedral rays of light, stained glass casting colors, quest beginning moment, dramatic chiaroscuro, Arthurian legend, detailed armor',neg:'casual, modern, cartoon, low detail',cat:'character',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['knight','sword','cathedral']},
+{id:'b54',prompt:'Zero gravity garden inside space station, flowers and vegetables growing in spiral patterns, Earth visible through cupola, astronaut tending plants, sunlight through windows, peaceful, utopian',neg:'dark, dystopian, dirty, broken',cat:'scifi',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['space station','garden','zero gravity']},
+{id:'b55',prompt:'Mycelium network connecting forest floor, bioluminescent fungi in impossible colors, fairy rings, spores creating light trails, microscopic and macroscopic view combined, mystical nature documentary',neg:'city, urban, dark, dead nature',cat:'photo',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['mushroom','bioluminescent','forest']},
+{id:'b56',prompt:'Watercolor painting of Venice canals at dawn, gondola with silhouette couple, pastel buildings reflecting in still water, laundry hanging between windows, Italian atmosphere, loose brushwork, artistic',neg:'photograph, sharp, modern, tourist',cat:'landscape',model:'SDXL',steps:24,cfg:6,sampler:'Euler a',tags:['venice','watercolor','dawn']},
+{id:'b57',prompt:'Demon king on obsidian throne of bones, crown of black iron, rivers of fire in cavern below, winged silhouettes in smoke, dark fantasy, imposing figure, dramatic uplight, detailed armor',neg:'cute, bright, angelic, simple',cat:'character',model:'SDXL',steps:34,cfg:8,sampler:'DPM++ SDE Karras',tags:['demon','throne','dark fantasy']},
+{id:'b58',prompt:'Aurora borealis over glacial lake, perfect reflections, snow-covered pine forest silhouettes, lone tipi with warm fire glow, stars visible, wilderness of northern Canada, long exposure photography',neg:'city, urban, daylight, tropical',cat:'landscape',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['aurora','glacier','night']},
+{id:'b59',prompt:'Bustling alien marketplace, diverse extraterrestrial species trading, bioluminescent market stalls, floating platforms, exotic fruits and artifacts, cantina scene, Star Wars meets Blade Runner, detailed crowd',neg:'earth, human only, empty, modern',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['alien','marketplace','crowd']},
+{id:'b60',prompt:'Kintsugi porcelain fox, golden repairs glowing, broken pieces reassembled, Japanese philosophy of beauty in imperfection, studio lighting, fine art photography, white background, elegant and meaningful',neg:'colorful background, messy, cheap, plastic',cat:'minimal',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['kintsugi','porcelain','golden']},
+{id:'b61',prompt:'Colossal ancient statue half-buried in desert sand, only face and one hand visible, wind-carved features, lone traveler standing on palm for scale, Lawrence of Arabia atmosphere, epic wide shot',neg:'small, indoor, modern, city',cat:'landscape',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['statue','desert','ancient']},
+{id:'b62',prompt:'Bioluminescent deep ocean leviathan passing over tiny submarine, whale-like creature with glowing patterns, deep sea research vessel with headlights, sense of scale and wonder, blue darkness, cinematic',neg:'surface, bright, small creature, pool',cat:'scifi',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['leviathan','deep sea','submarine']},
+{id:'b63',prompt:'Art deco metropolis skyline at dusk, golden and chrome skyscrapers, zeppelins docking at spires, Gatsby era meets future, geometric patterns, warm sunset, Chrysler building inspired, panoramic',neg:'modern, boring, dull colors, rural',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['art deco','city','zeppelin']},
+{id:'b64',prompt:'Tiger made of flowing water and fish, koi swimming through its body, waterfall mane, river forming the tail, Japanese woodblock print style meets digital art, Hokusai inspired, blue and orange',neg:'realistic tiger, photographic, plain, boring',cat:'abstract',model:'SDXL',steps:28,cfg:7.5,sampler:'Euler a',tags:['tiger','water','koi']},
+{id:'b65',prompt:'Abandoned amusement park reclaimed by nature, ferris wheel covered in vines, carousel horses in tall grass, haunted but beautiful, golden hour, nostalgia, urban exploration photography, moody',neg:'operating, bright, clean, people',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['abandoned','amusement park','nature']},
+{id:'b66',prompt:'Elemental goddess of autumn, dress made of falling leaves, crown of acorns, skin like birch bark, arms raised conducting wind, forest responding to her presence, detailed face, mythical beauty, pre-raphaelite',neg:'modern, spring, winter, sci-fi',cat:'portrait',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ SDE Karras',tags:['goddess','autumn','elemental']},
+{id:'b67',prompt:'Interdimensional portal in ancient ruins, stone archway framing swirling cosmic vortex, artifacts from different realities scattered around, explorer reaching toward light, sense of wonder, concept art',neg:'ordinary, empty, modern door, boring',cat:'concept',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ 2M Karras',tags:['portal','interdimensional','ruins']},
+{id:'b68',prompt:'Fox spirit kitsune in cherry blossom storm, nine tails flowing, porcelain mask half-hanging, lantern floating nearby, Japanese mythology, moonlit night, digital painting, ethereal and mysterious',neg:'western, realistic animal, day, simple',cat:'anime',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ SDE Karras',tags:['kitsune','cherry blossom','mythology']},
+{id:'b69',prompt:'Bonsai tree that is actually a tiny living planet, miniature mountains, oceans, clouds and tiny civilizations on its branches, cosmic roots reaching into starfield, meditation garden setting, surreal concept',neg:'normal bonsai, realistic, boring, empty',cat:'concept',model:'SDXL',steps:32,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['bonsai','planet','miniature']},
+{id:'b70',prompt:'Fire dancer performing at night, trails of flame creating patterns in air, sparks flying, dynamic movement, tribal ceremony, muscle definition, dramatic lighting, perfect timing, sports photography',neg:'static, day, indoor, blurry',cat:'photo',model:'SDXL',steps:26,cfg:7,sampler:'DPM++ 2M Karras',tags:['fire','dancer','performance']},
+{id:'b71',prompt:'Clockwork heart made of brass and crystal, gears visible through transparent casing, blue energy fluid pumping through glass tubes, ornate victorian mechanism, macro 3D render, detailed mechanical',neg:'organic, simple, modern, plastic',cat:'3d',model:'SDXL',steps:32,cfg:7,sampler:'DPM++ 2M Karras',tags:['clockwork','heart','steampunk']},
+{id:'b72',prompt:'Space whale swimming through nebula, barnacles that are tiny planets, cosmic dust trail, star formation in its wake, enormous scale, blue and purple tones, spiritual sci-fi, majestic and peaceful',neg:'ocean, earth, small, realistic whale',cat:'scifi',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['space whale','nebula','cosmic']},
+{id:'b73',prompt:'Rain-soaked neon back alley with food stall, steam and smoke mixing with rain, cook preparing ramen, warm light from stall contrasting cold blue rain, intimate urban moment, street photography, cinematic',neg:'sunny, clean, empty, suburban',cat:'photo',model:'SDXL',steps:28,cfg:7,sampler:'DPM++ 2M Karras',tags:['neon','rain','food stall']},
+{id:'b74',prompt:'Ice queen standing in frozen throne room, dress made of crystalline frost, breath visible as ice crystals, frozen guards flanking throne, cold blue palette with warm candle accents, dark fantasy portrait',neg:'warm, summer, casual, simple',cat:'portrait',model:'SDXL',steps:30,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['ice queen','frozen','throne']},
+{id:'b75',prompt:'Microscopic view of sound waves creating geometric patterns in sand, cymatics, kaleidoscopic symmetry, vibrant colors from frequency mapping, scientific art, precision and beauty, high resolution',neg:'messy, random, blurry, simple',cat:'abstract',model:'SDXL',steps:28,cfg:8,sampler:'DPM++ SDE',tags:['cymatics','sound','geometric']},
+{id:'b76',prompt:'Magical apothecary shop, shelves of glowing potion bottles, dried herbs hanging from ceiling, ancient scales on wooden counter, cat sleeping on grimoire, warm firelight, wizarding world aesthetic, detailed interior',neg:'modern pharmacy, clean, bright, empty',cat:'fantasy',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['apothecary','potions','magical']},
+{id:'b77',prompt:'Jellyfish cathedral, enormous translucent jellyfish forming arches and vaults, bioluminescent patterns like stained glass, deep ocean floor, small diver for scale, awe-inspiring, ethereal blue light',neg:'surface, church, land, ordinary',cat:'concept',model:'SDXL',steps:34,cfg:7.5,sampler:'DPM++ SDE Karras',tags:['jellyfish','cathedral','deep sea']},
+{id:'b78',prompt:'Duel between sun and moon warriors on eclipse battlefield, solar sword vs lunar scythe, contrasting warm and cold light, dramatic action pose, celestial arena, anime style, dynamic composition',neg:'static, boring, realistic, dull',cat:'anime',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['warrior','eclipse','duel']},
+{id:'b79',prompt:'Alien flora terraforming barren planet, colorful plants breaking through cracked earth, transformation in progress, before and after in single frame, science fiction meets nature documentary, hopeful',neg:'earth plants, dead, dark, empty',cat:'scifi',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['alien','terraforming','plants']},
+{id:'b80',prompt:'Ancient celestial map painted on dome ceiling, zodiac figures coming to life, gold leaf stars, midnight blue background, renaissance observatory, person looking up in wonder, baroque art, detailed',neg:'modern, digital, simple, flat',cat:'concept',model:'SDXL',steps:30,cfg:7,sampler:'DPM++ 2M Karras',tags:['celestial','zodiac','renaissance']}
+];
 
-    function createLoadingSkeleton(count = 6) {
-        return Array(count).fill('').map(() => `
-            <div class="prompt-card">
-                <div class="skeleton" style="aspect-ratio: 1/1;"></div>
-                <div style="padding: 10px;">
-                    <div class="skeleton" style="height: 12px; width: 60%; margin-bottom: 6px;"></div>
-                    <div class="skeleton" style="height: 10px; width: 40%;"></div>
-                </div>
-            </div>
-        `).join('');
-    }
+// Add src field to built-in
+BUILTIN.forEach(b => { b.src = 'Built-in'; b.likes = Math.floor(Math.random()*200)+10; });
 
-    // ==========================================
-    // VIEW RENDERERS
-    // ==========================================
-    function renderHome() {
-        const featured = State.prompts.length > 0 ? State.prompts[0] : null;
-        const trending = State.prompts.slice(1, 13);
-        const recentSaved = State.savedPrompts.slice(0, 4);
+// ============================================================
+// CACHE (localStorage with 6hr expiry)
+// ============================================================
+const CACHE_KEY = 'pv_cache';
+const CACHE_DUR = 6 * 60 * 60 * 1000;
 
-        return `
-            <div class="animate-fade">
-                <!-- Hero section -->
-                <section class="hero-gradient" style="padding: 24px 16px 20px;">
-                    <p style="font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 4px;">Welcome to PromptVerse</p>
-                    <h2 style="font-size: 24px; font-weight: 800; line-height: 1.2; margin-bottom: 8px;">
-                        Discover Perfect<br>AI Image Prompts
-                    </h2>
-                    <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">
-                        Browse thousands of prompts from Civitai, Lexica, and more. Copy, save, and create stunning AI art.
-                    </p>
-                    <div onclick="switchView('search')" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; cursor: pointer;">
-                        <i class="fas fa-magnifying-glass" style="color: var(--muted); font-size: 14px;"></i>
-                        <span style="color: var(--muted); font-size: 14px;">Search prompts...</span>
-                    </div>
-                </section>
+function getCache() {
+    try {
+        const c = JSON.parse(localStorage.getItem(CACHE_KEY));
+        if (c && Date.now() - c.t < CACHE_DUR) return c.d;
+    } catch{}
+    return null;
+}
+function setCache(data) {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({d:data,t:Date.now()}));
+    } catch{}
+}
 
-                <!-- Quick categories -->
-                <section style="padding: 0 16px 16px;">
-                    <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none;" class="hide-scrollbar">
-                        ${CATEGORIES.slice(0, 8).map(cat => `
-                            <div class="chip" onclick="exploreCategory('${cat.id}')">
-                                <i class="fas ${cat.icon}" style="font-size: 10px;"></i>
-                                ${cat.name}
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>
-
-                <!-- Featured prompt -->
-                ${featured ? `
-                <section style="padding: 0 16px 20px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Featured</h3>
-                    <div onclick="openDetail(State.prompts[0])" style="
-                        background: var(--bg2); border: 1px solid var(--border); border-radius: 18px;
-                        overflow: hidden; cursor: pointer; transition: all 0.3s ease;
-                    " onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
-                        ${featured.imageUrl ? `
-                            <img src="${featured.imageUrl}" alt="Featured" style="width: 100%; height: 200px; object-fit: cover;" loading="lazy" onerror="this.style.display='none'">
-                        ` : ''}
-                        <div style="padding: 14px;">
-                            <p style="font-size: 13px; color: var(--text); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                ${escapeHtml(featured.prompt.substring(0, 150))}
-                            </p>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
-                                <span style="font-size: 10px; color: var(--accent); background: rgba(6,214,160,0.1); padding: 3px 8px; border-radius: 6px;">${featured.source}</span>
-                                ${featured.model ? `<span style="font-size: 10px; color: var(--muted);">${escapeHtml(featured.model)}</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                ` : ''}
-
-                <!-- Trending -->
-                <section style="padding: 0 16px 20px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <h3 style="font-size: 16px; font-weight: 700;">Trending</h3>
-                        <span onclick="switchView('explore')" style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500;">See all <i class="fas fa-chevron-right" style="font-size: 10px;"></i></span>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        ${State.loading ? createLoadingSkeleton(4) :
-                          trending.length > 0 ? trending.map((p, i) => createPromptCard(p, i)).join('') :
-                          `<div class="empty-state" style="grid-column: span 2;"><i class="fas fa-wand-magic-sparkles"></i><p>No prompts loaded yet</p></div>`
-                        }
-                    </div>
-                </section>
-
-                <!-- Recent saved -->
-                ${recentSaved.length > 0 ? `
-                <section style="padding: 0 16px 24px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <h3 style="font-size: 16px; font-weight: 700;">Recently Saved</h3>
-                        <span onclick="switchView('saved')" style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500;">View all <i class="fas fa-chevron-right" style="font-size: 10px;"></i></span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        ${recentSaved.map(p => `
-                            <div onclick="openDetail(State.savedPrompts.find(sp=>sp.id==='${p.id}'))" style="
-                                display: flex; align-items: center; gap: 12px;
-                                padding: 10px 14px; background: var(--bg2);
-                                border: 1px solid var(--border); border-radius: 14px;
-                                cursor: pointer; transition: all 0.2s ease;
-                            " onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
-                                ${p.imageUrl ? `<img src="${p.imageUrl}" style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none'">` : `<div style="width: 44px; height: 44px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fas fa-wand-magic-sparkles" style="color: var(--muted); font-size: 14px;"></i></div>`}
-                                <p style="font-size: 12px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(p.prompt.substring(0, 60))}</p>
-                                <i class="fas fa-chevron-right" style="color: var(--muted); font-size: 10px;"></i>
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>
-                ` : ''}
-            </div>
-        `;
-    }
-
-    function renderExplore() {
-        const sourceInfo = SOURCES[State.currentSource];
-        return `
-            <div class="animate-fade">
-                <!-- Source info -->
-                <section style="padding: 16px 16px 12px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: ${sourceInfo.color}22; color: ${sourceInfo.color};">
-                                <i class="fas ${sourceInfo.icon}"></i>
-                            </div>
-                            <div>
-                                <h2 style="font-size: 16px; font-weight: 700;">${sourceInfo.name}</h2>
-                                <p style="font-size: 11px; color: var(--muted);">${State.prompts.length} prompts loaded</p>
-                            </div>
-                        </div>
-                        <button onclick="loadPrompts().then(renderCurrentView)" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px;">
-                            <i class="fas fa-arrows-rotate ${State.loading ? 'fa-spin' : ''}"></i> Refresh
-                        </button>
-                    </div>
-
-                    <!-- Sort options -->
-                    <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-                        ${['trending', 'newest'].map(sort => `
-                            <div class="chip ${State.sortBy === sort ? 'active' : ''}" onclick="changeSort('${sort}')">
-                                <i class="fas ${sort === 'trending' ? 'fa-fire' : 'fa-clock'}"></i>
-                                ${sort.charAt(0).toUpperCase() + sort.slice(1)}
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <!-- Category chips -->
-                    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none;">
-                        ${CATEGORIES.map(cat => `
-                            <div class="chip ${State.currentCategory === cat.id ? 'active' : ''}" onclick="changeCategory('${cat.id}')">
-                                ${cat.name}
-                            </div>
-                        `).join('')}
-                    </div>
-                </section>
-
-                <!-- Prompt grid -->
-                <section style="padding: 0 16px 24px;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;" id="exploreGrid">
-                        ${State.loading ? createLoadingSkeleton(6) :
-                          State.prompts.length > 0 ? State.prompts.map((p, i) => createPromptCard(p, i)).join('') :
-                          `<div class="empty-state" style="grid-column: span 2;">
-                              <i class="fas fa-wand-magic-sparkles"></i>
-                              <p style="margin-bottom: 12px;">No prompts found</p>
-                              <button onclick="loadPrompts().then(renderCurrentView)" class="action-btn primary" style="font-size: 12px;">Try Again</button>
-                          </div>`
-                        }
-                    </div>
-
-                    <!-- Load more -->
-                    ${State.hasMore && !State.loading && State.prompts.length > 0 ? `
-                        <div style="text-align: center; margin-top: 20px;">
-                            <button onclick="loadMore()" class="action-btn secondary">
-                                <i class="fas fa-plus"></i> Load More
-                            </button>
-                        </div>
-                    ` : ''}
-                </section>
-            </div>
-        `;
-    }
-
-    function renderSearch() {
-        return `
-            <div class="animate-fade">
-                <section style="padding: 16px;">
-                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 14px;">Search Prompts</h2>
-                    <div style="position: relative; margin-bottom: 16px;">
-                        <i class="fas fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px;"></i>
-                        <input type="text" class="search-input" id="searchInput" placeholder="Describe what you want to create..."
-                            value="${escapeHtml(State.searchQuery)}" onkeydown="if(event.key==='Enter')doSearch()" autofocus>
-                        ${State.searchQuery ? `<button onclick="clearSearch()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer;"><i class="fas fa-xmark"></i></button>` : ''}
-                    </div>
-                    <button onclick="doSearch()" class="action-btn primary" style="width: 100%; margin-bottom: 16px;">
-                        <i class="fas fa-magnifying-glass"></i> Search
-                    </button>
-                </section>
-
-                <!-- Search results -->
-                <section style="padding: 0 16px 24px;">
-                    ${State.searchQuery && State.prompts.length > 0 ? `
-                        <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Results for "${escapeHtml(State.searchQuery)}"</p>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                            ${State.prompts.map((p, i) => createPromptCard(p, i)).join('')}
-                        </div>
-                    ` : State.searchQuery && !State.loading ? `
-                        <div class="empty-state">
-                            <i class="fas fa-magnifying-glass"></i>
-                            <p>No results found for "${escapeHtml(State.searchQuery)}"</p>
-                            <p style="font-size: 12px; margin-top: 4px;">Try different keywords or sources</p>
-                        </div>
-                    ` : !State.searchQuery ? `
-                        <!-- Popular searches -->
-                        <div>
-                            <p style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text);">Popular Searches</p>
-                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                                ${['anime girl', 'landscape', 'cyberpunk', 'portrait', 'fantasy art', 'cat', 'space', 'dragon', 'flowers', 'architecture', 'robot', 'sunset'].map(q => `
-                                    <div class="chip" onclick="quickSearch('${q}')">${q}</div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                </section>
-            </div>
-        `;
-    }
-
-    function renderSaved() {
-        return `
-            <div class="animate-fade">
-                <section style="padding: 16px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                        <div>
-                            <h2 style="font-size: 18px; font-weight: 700;">Saved Prompts</h2>
-                            <p style="font-size: 12px; color: var(--muted);">${State.savedPrompts.length} prompt${State.savedPrompts.length !== 1 ? 's' : ''} saved</p>
-                        </div>
-                        ${State.savedPrompts.length > 0 ? `
-                            <button onclick="clearAllSaved()" class="action-btn secondary" style="padding: 6px 12px; font-size: 11px; color: #f43f5e; border-color: rgba(244,63,94,0.3);">
-                                <i class="fas fa-trash"></i> Clear All
-                            </button>
-                        ` : ''}
-                    </div>
-                </section>
-
-                <section style="padding: 0 16px 24px;">
-                    ${State.savedPrompts.length > 0 ? `
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            ${State.savedPrompts.map((p, i) => `
-                                <div onclick="openDetail(State.savedPrompts[${i}])" class="animate-slide" style="animation-delay: ${i * 40}ms; display: flex; gap: 12px; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
-                                    ${p.imageUrl ? `<img src="${p.imageUrl}" style="width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none'">` : `<div style="width: 56px; height: 56px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fas fa-wand-magic-sparkles" style="color: var(--muted);"></i></div>`}
-                                    <div style="flex: 1; min-width: 0;">
-                                        <p style="font-size: 12px; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(p.prompt.substring(0, 120))}</p>
-                                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
-                                            <span style="font-size: 10px; color: var(--accent);">${p.source || 'Built-in'}</span>
-                                            ${p.model ? `<span style="font-size: 10px; color: var(--muted);">· ${escapeHtml(p.model)}</span>` : ''}
-                                        </div>
-                                    </div>
-                                    <button onclick="event.stopPropagation(); toggleSave(State.savedPrompts[${i}])" style="background: none; border: none; color: #f59e0b; cursor: pointer; padding: 4px; font-size: 14px; align-self: flex-start;" aria-label="Remove from saved">
-                                        <i class="fas fa-bookmark"></i>
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : `
-                        <div class="empty-state">
-                            <i class="fas fa-bookmark"></i>
-                            <p style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">No saved prompts yet</p>
-                            <p style="font-size: 12px;">Browse and save prompts you love</p>
-                            <button onclick="switchView('explore')" class="action-btn primary" style="margin-top: 16px; font-size: 12px;">
-                                <i class="fas fa-compass"></i> Explore Prompts
-                            </button>
-                        </div>
-                    `}
-                </section>
-            </div>
-        `;
-    }
-
-    // ==========================================
-    // VIEW SWITCHING
-    // ==========================================
-    function switchView(view) {
-        State.currentView = view;
-
-        // Update nav
-        document.querySelectorAll('.nav-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.view === view);
-        });
-
-        renderCurrentView();
-        document.getElementById('mainContent').scrollTop = 0;
-    }
-
-    function renderCurrentView() {
-        const main = document.getElementById('mainContent');
-        switch(State.currentView) {
-            case 'home': main.innerHTML = renderHome(); break;
-            case 'explore': main.innerHTML = renderExplore(); break;
-            case 'search': main.innerHTML = renderSearch(); break;
-            case 'saved': main.innerHTML = renderSaved(); break;
+// ============================================================
+// LOAD ALL SOURCES SIMULTANEOUSLY
+// ============================================================
+async function loadAllSources(forceRefresh = false) {
+    // Check cache first
+    if (!forceRefresh) {
+        const cached = getCache();
+        if (cached && cached.length > 20) {
+            S.prompts = cached;
+            S.srcCounts.builtin = BUILTIN.length;
+            // Count sources
+            cached.forEach(p => { if(S.srcCounts[p.src?.toLowerCase().replace(' ','')] !== undefined) S.srcCounts[p.src.toLowerCase().replace(' ','')]++; else S.srcCounts[p.src] = (S.srcCounts[p.src]||0)+1; });
+            updateHdr();
+            return;
         }
     }
 
-    // ==========================================
-    // ACTIONS
-    // ==========================================
-    async function doSearch() {
-        const input = document.getElementById('searchInput');
-        const query = input ? input.value.trim() : State.searchQuery;
-        if (!query) return;
+    // Show loading
+    S.loading = true;
+    S.srcStatus = {civitai:'load',lexica:'load',meigen:'load',builtin:'ok',github:'load'};
+    S.srcCounts = {civitai:0,lexica:0,meigen:0,builtin:BUILTIN.length,github:0};
+    updateHdr();
+    render();
 
-        State.searchQuery = query;
-        State.prompts = [];
-        State.loading = true;
-        renderCurrentView();
+    // Start with built-in
+    S.prompts = [...BUILTIN];
 
-        // Use Lexica for search (better search capability)
-        const prevSource = State.currentSource;
-        State.currentSource = 'lexica';
-
-        await loadPrompts();
-        State.currentSource = prevSource;
-        renderCurrentView();
-    }
-
-    function quickSearch(query) {
-        State.searchQuery = query;
-        doSearch();
-    }
-
-    function clearSearch() {
-        State.searchQuery = '';
-        State.prompts = [];
-        renderCurrentView();
-    }
-
-    async function changeCategory(cat) {
-        State.currentCategory = cat;
-        State.prompts = [];
-        State.currentPage = 1;
-        await loadPrompts();
-        renderCurrentView();
-    }
-
-    async function changeSort(sort) {
-        State.sortBy = sort;
-        State.prompts = [];
-        State.currentPage = 1;
-        await loadPrompts();
-        renderCurrentView();
-    }
-
-    async function loadMore() {
-        State.currentPage++;
-        await loadPrompts(true);
-        renderCurrentView();
-    }
-
-    function exploreCategory(cat) {
-        State.currentCategory = cat;
-        switchView('explore');
-    }
-
-    function clearAllSaved() {
-        if (confirm('Remove all saved prompts?')) {
-            State.savedPrompts = [];
-            localStorage.setItem('pv_saved', '[]');
-            updateSavedNotif();
-            renderCurrentView();
-            showToast('All saved prompts cleared', 'fa-trash');
-        }
-    }
-
-    // ==========================================
-    // BACKGROUND AMBIENT EFFECT
-    // ==========================================
-    function createAmbientOrbs() {
-        const container = document.createElement('div');
-        container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;';
-        document.body.insertBefore(container, document.body.firstChild);
-
-        const colors = ['rgba(6,214,160,0.04)', 'rgba(124,58,237,0.04)', 'rgba(6,182,212,0.03)'];
-        for (let i = 0; i < 3; i++) {
-            const orb = document.createElement('div');
-            const size = 250 + Math.random() * 200;
-            orb.style.cssText = `
-                position: absolute;
-                width: ${size}px; height: ${size}px;
-                border-radius: 50%;
-                background: ${colors[i]};
-                filter: blur(80px);
-                left: ${Math.random() * 100}%;
-                top: ${Math.random() * 100}%;
-                animation: float ${6 + Math.random() * 4}s ease-in-out infinite;
-                animation-delay: ${i * 2}s;
-            `;
-            container.appendChild(orb);
-        }
-    }
-
-    // ==========================================
-    // INFINITE SCROLL
-    // ==========================================
-    function setupInfiniteScroll() {
-        const main = document.getElementById('mainContent');
-        main.addEventListener('scroll', () => {
-            if (State.currentView !== 'explore') return;
-            const threshold = 300;
-            if (main.scrollHeight - main.scrollTop - main.clientHeight < threshold) {
-                if (!State.loading && State.hasMore && State.prompts.length > 0) {
-                    loadMore();
-                }
+    // Fetch all sources in parallel
+    const results = await Promise.allSettled([
+        // Civitai - fetch 2 pages for more content
+        (async()=>{
+            const all = [];
+            for(let page=1;page<=3;page++){
+                try{
+                    const sorts=['Most Reactions','Newest','Most Comments'];
+                    const items=await fetchCivitai(page,50,sorts[page-1]||'Most Reactions');
+                    all.push(...items);
+                }catch{break}
             }
-        });
+            return all;
+        })(),
+        // Lexica - multiple searches
+        (async()=>{
+            const all=[];
+            const terms=['art','portrait','landscape','anime','fantasy','cyberpunk','character design'];
+            for(const t of terms){
+                try{const items=await fetchLexica(t);all.push(...items)}catch{continue}
+            }
+            return all;
+        })(),
+        // Meigen AI
+        (async()=>{
+            return await scrapeMeigen();
+        })(),
+        // GitHub
+        (async()=>{
+            return await fetchGithubPrompts();
+        })()
+    ]);
+
+    // Process Civitai
+    if(results[0].status==='fulfilled' && results[0].value.length>0) {
+        S.srcStatus.civitai='ok';
+        S.srcCounts.civitai=results[0].value.length;
+        S.prompts.push(...results[0].value);
+    } else { S.srcStatus.civitai='err'; }
+
+    // Process Lexica
+    if(results[1].status==='fulfilled' && results[1].value.length>0) {
+        S.srcStatus.lexica='ok';
+        S.srcCounts.lexica=results[1].value.length;
+        S.prompts.push(...results[1].value);
+    } else { S.srcStatus.lexica='err'; }
+
+    // Process Meigen
+    if(results[2].status==='fulfilled' && results[2].value.length>0) {
+        S.srcStatus.meigen='ok';
+        S.srcCounts.meigen=results[2].value.length;
+        S.prompts.push(...results[2].value);
+    } else { S.srcStatus.meigen='err'; }
+
+    // Process GitHub
+    if(results[3].status==='fulfilled' && results[3].value.length>0) {
+        S.srcStatus.github='ok';
+        S.srcCounts.github=results[3].value.length;
+        S.prompts.push(...results[3].value);
+    } else { S.srcStatus.github='err'; }
+
+    // Deduplicate by prompt text
+    const seen = new Set();
+    S.prompts = S.prompts.filter(p => {
+        const key = p.prompt.substring(0,80).toLowerCase().trim();
+        if(seen.has(key)) return false;
+        seen.add(key); return true;
+    });
+
+    // Sort by likes descending
+    S.prompts.sort((a,b) => (b.likes||0) - (a.likes||0));
+
+    // Cache
+    setCache(S.prompts);
+    S.loading = false;
+    updateHdr();
+    render();
+    toast(`Loaded ${S.prompts.length} prompts from ${Object.values(S.srcStatus).filter(s=>s==='ok').length} sources`, 'fa-check-circle');
+}
+
+function updateHdr() {
+    const total = S.prompts.length;
+    const okCount = Object.values(S.srcStatus).filter(s=>s==='ok').length;
+    const el = document.getElementById('hdrSub');
+    if(S.loading) el.textContent = 'Loading sources...';
+    else el.textContent = `${total} prompts from ${okCount} sources`;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, icon='fa-check') {
+    const c=document.getElementById('toasts');
+    const t=document.createElement('div');
+    t.className='toast';
+    t.innerHTML=`<i class="fas ${icon}" style="color:var(--accent)"></i> ${msg}`;
+    c.appendChild(t);
+    setTimeout(()=>t.remove(),2500);
+}
+
+// ============================================================
+// SAVE / COPY
+// ============================================================
+function isSaved(id){return S.saved.some(p=>p.id===id)}
+function toggleSave(p){
+    if(isSaved(p.id)){S.saved=S.saved.filter(x=>x.id!==p.id);toast('Removed from saved','fa-bookmark')}
+    else{S.saved.unshift({...p});toast('Saved to collection','fa-bookmark')}
+    localStorage.setItem('pv_s',JSON.stringify(S.saved));
+    document.getElementById('saveDot').style.display=S.saved.length?'block':'none';
+    render();
+}
+async function copyPrompt(text){
+    try{await navigator.clipboard.writeText(text)}catch{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
+    toast('Copied to clipboard','fa-copy');
+}
+
+// ============================================================
+// DETAIL MODAL
+// ============================================================
+function openDetail(p) {
+    const m=document.getElementById('detailModal');
+    const sv=isSaved(p.id);
+    document.getElementById('detailBody').innerHTML=`
+        <div class="modal-hdr">
+            <button onclick="closeDetail()" class="hdr-btn"><i class="fas fa-arrow-left"></i></button>
+            <div style="display:flex;gap:6px">
+                <button onclick="toggleSave(findP('${p.id}'))" class="hdr-btn ${sv?'':''}"><i class="fas fa-bookmark" style="color:${sv?'var(--accent3)':'var(--muted)'}"></i></button>
+                <button onclick="shareP('${p.id}')" class="hdr-btn"><i class="fas fa-share-nodes"></i></button>
+            </div>
+        </div>
+        ${p.img?`<img src="${p.img}" class="modal-img" onerror="this.style.display='none'" loading="lazy">`:''}
+        <div style="padding:16px">
+            <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+                <span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:7px;background:rgba(6,214,160,0.12);color:var(--accent);border:1px solid rgba(6,214,160,0.25)">${p.src||'Built-in'}</span>
+                ${p.likes?`<span style="font-size:10px;color:var(--muted)"><i class="fas fa-heart" style="color:var(--danger)"></i> ${p.likes}</span>`:''}
+                ${p.model&&p.model!=='Unknown'?`<span style="font-size:10px;color:var(--muted)">${esc(p.model)}</span>`:''}
+            </div>
+            <div style="margin-bottom:18px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <span style="font-size:12px;font-weight:700">Prompt</span>
+                    <button onclick="copyPrompt(findP('${p.id}').prompt)" class="btn btn-s btn-sm"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <div class="prompt-box">${esc(p.prompt)}</div>
+            </div>
+            ${p.neg?`<div style="margin-bottom:18px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <span style="font-size:12px;font-weight:700">Negative Prompt</span>
+                    <button onclick="copyPrompt(findP('${p.id}').neg)" class="btn btn-s btn-sm"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <div class="prompt-box" style="border-color:rgba(244,63,94,0.2);background:rgba(244,63,94,0.04)">${esc(p.neg)}</div>
+            </div>`:''}
+            ${(p.model||p.steps||p.cfg||p.sampler)?`<div style="margin-bottom:18px">
+                <span style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Parameters</span>
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                    ${p.model&&p.model!=='Unknown'?`<span class="param-tag"><i class="fas fa-cube" style="color:var(--accent);font-size:9px"></i> ${esc(p.model)}</span>`:''}
+                    ${p.steps?`<span class="param-tag"><i class="fas fa-shoe-prints" style="color:var(--accent2);font-size:9px"></i> ${p.steps} steps</span>`:''}
+                    ${p.cfg?`<span class="param-tag"><i class="fas fa-sliders" style="color:var(--accent3);font-size:9px"></i> CFG ${p.cfg}</span>`:''}
+                    ${p.sampler?`<span class="param-tag"><i class="fas fa-shuffle" style="color:#06b6d4;font-size:9px"></i> ${esc(p.sampler)}</span>`:''}
+                    ${p.seed?`<span class="param-tag"><i class="fas fa-seedling" style="color:#a3e635;font-size:9px"></i> ${p.seed}</span>`:''}
+                </div>
+            </div>`:''}
+            ${p.tags&&p.tags.length?`<div style="margin-bottom:18px">
+                <span style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Tags</span>
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                    ${p.tags.map(t=>`<span style="padding:3px 9px;border-radius:7px;font-size:10px;background:var(--bg3);color:var(--muted);border:1px solid var(--border)">#${esc(typeof t==='string'?t:t.name||'')}</span>`).join('')}
+                </div>
+            </div>`:''}
+            <div style="display:flex;gap:8px;margin-top:20px">
+                <button onclick="copyPrompt(findP('${p.id}').prompt)" class="btn btn-p" style="flex:1"><i class="fas fa-copy"></i> Copy Prompt</button>
+                <button onclick="toggleSave(findP('${p.id}'))" class="btn btn-s" style="flex:1"><i class="fas fa-bookmark"></i> ${sv?'Unsave':'Save'}</button>
+            </div>
+        </div>
+    `;
+    m.classList.add('open');
+}
+function closeDetail(){document.getElementById('detailModal').classList.remove('open')}
+function findP(id){return S.prompts.find(p=>p.id===id)||S.saved.find(p=>p.id===id)}
+function shareP(id){const p=findP(id);if(!p)return;if(navigator.share)navigator.share({title:'AI Prompt',text:p.prompt});else copyPrompt(p.prompt)}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ============================================================
+// SOURCE MODAL
+// ============================================================
+function showSources(){
+    const m=document.getElementById('srcModal');
+    const srcDefs=[
+        {key:'civitai',name:'Civitai',icon:'fa-fire',color:'#06d6a0',desc:'Community AI art platform - images, prompts, models'},
+        {key:'lexica',name:'Lexica',icon:'fa-search',color:'#7c3aed',desc:'Stable Diffusion search engine with millions of images'},
+        {key:'meigen',name:'Meigen AI',icon:'fa-language',color:'#f59e0b',desc:'Asian AI prompt library - curated collections'},
+        {key:'github',name:'GitHub Repos',icon:'fa-code-branch',color:'#06b6d4',desc:'Open source prompt collections from GitHub'},
+        {key:'builtin',name:'Built-in Library',icon:'fa-book',color:'#ec4899',desc:'80 curated prompts, always available offline'}
+    ];
+    document.getElementById('srcBody').innerHTML=`
+        <div class="modal-hdr">
+            <button onclick="closeSources()" class="hdr-btn"><i class="fas fa-arrow-left"></i></button>
+            <span style="font-size:14px;font-weight:700">Data Sources</span>
+            <div></div>
+        </div>
+        <div style="padding:14px">
+            <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+                ${Object.entries(S.srcStatus).map(([k,v])=>`<span class="status-pill ${v}"><span class="status-dot"></span>${k}: ${v==='ok'?'Connected':v==='err'?'Unavailable':'Loading...'}</span>`).join('')}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+                ${srcDefs.map(s=>`
+                    <div class="src-card">
+                        <div class="src-icon" style="background:${s.color}18;color:${s.color}"><i class="fas ${s.icon}"></i></div>
+                        <div style="flex:1;min-width:0">
+                            <div style="font-weight:700;font-size:13px">${s.name}</div>
+                            <div style="font-size:10px;color:var(--muted);margin-top:1px">${s.desc}</div>
+                        </div>
+                        <div class="src-count" style="color:${S.srcStatus[s.key]==='ok'?s.color:'var(--muted)'}">${S.srcCounts[s.key]||0}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="margin-top:16px;padding:12px;border-radius:11px;background:var(--bg3);border:1px solid var(--border)">
+                <p style="font-size:10px;color:var(--muted);line-height:1.6"><i class="fas fa-circle-info" style="color:var(--accent)"></i> Total: <strong style="color:var(--text)">${S.prompts.length}</strong> prompts. Data is cached for 6 hours. Click refresh to reload from sources.</p>
+            </div>
+        </div>
+    `;
+    m.classList.add('open');
+}
+function closeSources(){document.getElementById('srcModal').classList.remove('open')}
+
+// ============================================================
+// REFRESH
+// ============================================================
+async function refreshAll(){
+    const icon=document.getElementById('refreshIcon');
+    icon.classList.add('fa-spin');
+    localStorage.removeItem(CACHE_KEY);
+    await loadAllSources(true);
+    icon.classList.remove('fa-spin');
+    toast('All sources refreshed','fa-arrows-rotate');
+}
+
+// ============================================================
+// FILTERED PROMPTS
+// ============================================================
+function getFiltered() {
+    let list = [...S.prompts];
+    if(S.src!=='all') list = list.filter(p=>(p.src||'').toLowerCase().replace(' ','')===S.src);
+    if(S.cat!=='all') list = list.filter(p=>p.cat===S.cat);
+    if(S.q) {const q=S.q.toLowerCase(); list=list.filter(p=>p.prompt.toLowerCase().includes(q)||(p.tags||[]).some(t=>(typeof t==='string'?t:t.name||'').toLowerCase().includes(q)));}
+    return list;
+}
+
+// ============================================================
+// RENDER VIEWS
+// ============================================================
+function render() {
+    const main = document.getElementById('mainContent');
+    switch(S.view) {
+        case 'home': main.innerHTML = renderHome(); break;
+        case 'explore': main.innerHTML = renderExplore(); break;
+        case 'search': main.innerHTML = renderSearch(); break;
+        case 'saved': main.innerHTML = renderSaved(); break;
     }
+}
 
-    // ==========================================
-    // INIT
-    // ==========================================
-    async function init() {
-        createAmbientOrbs();
-        updateSavedNotif();
-        setupInfiniteScroll();
+function renderHome() {
+    const filtered = getFiltered();
+    const featured = filtered[0];
+    const trending = filtered.slice(0,12);
+    const recent = filtered.slice(12,24);
+    const savedRecent = S.saved.slice(0,4);
 
-        // Render loading state first
-        renderCurrentView();
+    return `<div class="anim-up">
+        <section class="hero-bg" style="padding:20px 14px 16px">
+            <p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:3px">PromptVerse</p>
+            <h2 style="font-size:22px;font-weight:800;line-height:1.15;margin-bottom:6px">Discover Perfect<br>AI Image Prompts</h2>
+            <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px">${S.prompts.length} prompts from ${Object.values(S.srcStatus).filter(s=>s==='ok').length} sources and growing</p>
+            <div onclick="go('search')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;cursor:pointer">
+                <i class="fas fa-magnifying-glass" style="color:var(--muted);font-size:13px"></i>
+                <span style="color:var(--muted);font-size:13px">Search prompts...</span>
+            </div>
+        </section>
 
-        // Load prompts from default source
-        await loadPrompts();
-        renderCurrentView();
+        <!-- Status bar -->
+        <div class="status-bar">
+            ${Object.entries(S.srcStatus).map(([k,v])=>`<span class="status-pill ${v}"><span class="status-dot"></span>${k==='civitai'?'Civitai':k==='lexica'?'Lexica':k==='meigen'?'Meigen':k==='github'?'GitHub':'Built-in'}</span>`).join('')}
+        </div>
+
+        <!-- Categories -->
+        <section style="padding:0 14px 14px">
+            <div class="chips">
+                ${CATS.map(c=>`<div class="chip ${S.cat===c.id?'act':''}" onclick="S.cat='${c.id}';render()"><i class="fas ${c.i}" style="font-size:9px"></i> ${c.n}</div>`).join('')}
+            </div>
+        </section>
+
+        <!-- Featured -->
+        ${featured?`<section style="padding:0 14px 16px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">Featured</h3>
+            <div onclick="openDetail(findP('${featured.id}'))" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+                ${featured.img?`<img src="${featured.img}" style="width:100%;height:180px;object-fit:cover" loading="lazy" onerror="this.style.display='none'">`:''}
+                <div style="padding:12px">
+                    <p style="font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(featured.prompt.substring(0,150))}</p>
+                    <div style="display:flex;gap:6px;margin-top:8px">
+                        <span style="font-size:9px;color:var(--accent);background:rgba(6,214,160,0.1);padding:2px 7px;border-radius:5px">${featured.src}</span>
+                        ${featured.model&&featured.model!=='Unknown'?`<span style="font-size:9px;color:var(--muted)">${esc(featured.model)}</span>`:''}
+                    </div>
+                </div>
+            </div>
+        </section>`:''}
+
+        <!-- Trending grid -->
+        <section style="padding:0 14px 16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <h3 style="font-size:14px;font-weight:700">Trending</h3>
+                <span onclick="go('explore')" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:600">See all <i class="fas fa-chevron-right" style="font-size:9px"></i></span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                ${S.loading?Array(6).fill('').map(()=>`<div class="card"><div class="skel" style="aspect-ratio:1/1"></div><div style="padding:8px"><div class="skel" style="height:10px;width:60%;margin-bottom:4px"></div><div class="skel" style="height:8px;width:40%"></div></div></div>`).join(''):
+                trending.length?trending.map((p,i)=>cardHTML(p,i)).join(''):
+                `<div class="empty" style="grid-column:span 2"><i class="fas fa-wand-magic-sparkles"></i><p>Loading prompts...</p></div>`}
+            </div>
+        </section>
+
+        <!-- More prompts -->
+        ${recent.length?`<section style="padding:0 14px 16px">
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">More to Explore</h3>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                ${recent.map((p,i)=>cardHTML(p,i+12)).join('')}
+            </div>
+            <div style="text-align:center;margin-top:16px">
+                <button onclick="go('explore')" class="btn btn-s"><i class="fas fa-compass"></i> Explore All ${filtered.length} Prompts</button>
+            </div>
+        </section>`:''}
+
+        <!-- Saved -->
+        ${savedRecent.length?`<section style="padding:0 14px 24px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <h3 style="font-size:14px;font-weight:700">Recently Saved</h3>
+                <span onclick="go('saved')" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:600">View all <i class="fas fa-chevron-right" style="font-size:9px"></i></span>
+            </div>
+            ${savedRecent.map(p=>`<div onclick="openDetail(S.saved.find(x=>x.id==='${p.id}'))" style="display:flex;gap:10px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:6px;transition:all .2s" onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+                ${p.img?`<img src="${p.img}" style="width:48px;height:48px;border-radius:9px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:`<div style="width:48px;height:48px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-wand-magic-sparkles" style="color:var(--muted);font-size:14px"></i></div>`}
+                <p style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:48px">${esc(p.prompt.substring(0,55))}</p>
+            </div>`).join('')}
+        </section>`:''}
+    </div>`;
+}
+
+function renderExplore() {
+    const filtered = getFiltered();
+    return `<div class="anim-up">
+        <section style="padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div><h2 style="font-size:16px;font-weight:700">Explore</h2><p style="font-size:10px;color:var(--muted)">${filtered.length} prompts</p></div>
+                <div style="display:flex;gap:4px">
+                    ${['all','civitai','lexica','meigen','github','builtin'].map(s=>`<div class="chip ${S.src===s?'act':''}" onclick="S.src='${s}';render()" style="font-size:9px;padding:4px 8px">${s==='all'?'All':s==='builtin'?'Built-in':s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+                </div>
+            </div>
+            <div class="chips" style="margin-bottom:8px">
+                ${CATS.map(c=>`<div class="chip ${S.cat===c.id?'act':''}" onclick="S.cat='${c.id}';render()">${c.n}</div>`).join('')}
+            </div>
+        </section>
+        <section style="padding:0 14px 24px">
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+                ${filtered.length?filtered.map((p,i)=>cardHTML(p,i)).join(''):`<div class="empty" style="grid-column:span 2"><i class="fas fa-wand-magic-sparkles"></i><p>No prompts match your filters</p><button onclick="S.src='all';S.cat='all';render()" class="btn btn-p" style="margin-top:10px;font-size:11px">Clear Filters</button></div>`}
+            </div>
+        </section>
+    </div>`;
+}
+
+function renderSearch() {
+    return `<div class="anim-up">
+        <section style="padding:14px">
+            <h2 style="font-size:16px;font-weight:700;margin-bottom:12px">Search Prompts</h2>
+            <div class="search-box" style="margin-bottom:10px">
+                <i class="fas fa-magnifying-glass ico"></i>
+                <input type="text" id="searchIn" placeholder="Describe what you want to create..." value="${esc(S.q)}" onkeydown="if(event.key==='Enter')doSearch()">
+            </div>
+            <button onclick="doSearch()" class="btn btn-p" style="width:100%"><i class="fas fa-magnifying-glass"></i> Search</button>
+        </section>
+        <section style="padding:0 14px">
+            ${S.q?`<p style="font-size:11px;color:var(--muted);margin-bottom:10px">Results for "${esc(S.q)}" (${getFiltered().length})</p>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px">
+                ${getFiltered().length?getFiltered().slice(0,30).map((p,i)=>cardHTML(p,i)).join(''):`<div class="empty" style="grid-column:span 2"><i class="fas fa-magnifying-glass"></i><p>No results found</p></div>`}
+            </div>`:`
+            <p style="font-size:12px;font-weight:600;margin-bottom:10px">Popular Searches</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:20px">
+                ${['anime girl','landscape','cyberpunk','portrait','fantasy art','dragon','space','robot','cat warrior','sunset','underwater','steampunk','vintage','forest','castle','neon city'].map(q=>`<div class="chip" onclick="S.q='${q}';doSearch()">${q}</div>`).join('')}
+            </div>`}
+        </section>
+    </div>`;
+}
+
+function renderSaved() {
+    return `<div class="anim-up">
+        <section style="padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div><h2 style="font-size:16px;font-weight:700">Saved Prompts</h2><p style="font-size:10px;color:var(--muted)">${S.saved.length} saved</p></div>
+                ${S.saved.length?`<button onclick="if(confirm('Clear all saved?')){S.saved=[];localStorage.setItem('pv_s','[]');document.getElementById('saveDot').style.display='none';render();toast('Cleared','fa-trash')}" class="btn btn-s btn-sm" style="color:var(--danger);border-color:rgba(244,63,94,0.3)"><i class="fas fa-trash"></i> Clear</button>`:''}
+            </div>
+        </section>
+        <section style="padding:0 14px 24px">
+            ${S.saved.length?S.saved.map((p,i)=>`
+                <div onclick="openDetail(S.saved[${i}])" style="display:flex;gap:10px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;margin-bottom:6px;transition:all .2s" onmouseover="this.style.borderColor='rgba(6,214,160,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+                    ${p.img?`<img src="${p.img}" style="width:50px;height:50px;border-radius:9px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:`<div style="width:50px;height:50px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-wand-magic-sparkles" style="color:var(--muted)"></i></div>`}
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5">${esc(p.prompt.substring(0,120))}</p>
+                        <div style="display:flex;gap:5px;margin-top:4px"><span style="font-size:9px;color:var(--accent)">${p.src||'Built-in'}</span>${p.model&&p.model!=='Unknown'?`<span style="font-size:9px;color:var(--muted)">· ${esc(p.model)}</span>`:''}</div>
+                    </div>
+                    <button onclick="event.stopPropagation();toggleSave(S.saved[${i}])" style="background:none;border:none;color:var(--accent3);cursor:pointer;font-size:13px;padding:4px;align-self:flex-start"><i class="fas fa-bookmark"></i></button>
+                </div>
+            `).join(''):`<div class="empty"><i class="fas fa-bookmark"></i><p style="font-size:14px;font-weight:600;margin-bottom:4px">No saved prompts yet</p><p style="font-size:11px">Browse and bookmark prompts you love</p><button onclick="go('explore')" class="btn btn-p" style="margin-top:14px;font-size:11px"><i class="fas fa-compass"></i> Explore</button></div>`}
+        </section>
+    </div>`;
+}
+
+function cardHTML(p, idx) {
+    const sv = isSaved(p.id);
+    const hasImg = p.img && !S.imgErr.has(p.id);
+    return `<div class="card anim-up" style="animation-delay:${Math.min(idx*40,500)}ms" onclick="openDetail(findP('${p.id}'))">
+        ${hasImg?`<div style="position:relative;overflow:hidden"><img src="${p.img}" class="card-img" loading="lazy" onerror="this.style.display='none';S.imgErr.add('${p.id}');this.nextElementSibling.style.display='flex'"><div style="display:none;aspect-ratio:1/1;background:var(--bg3);align-items:center;justify-content:center" class="img-placeholder"><i class="fas fa-image" style="color:var(--muted);font-size:20px"></i></div><div class="card-ov"><p>${esc(p.prompt.substring(0,100))}</p></div></div>`:
+        `<div style="aspect-ratio:1/1;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;padding:10px"><i class="fas fa-wand-magic-sparkles" style="font-size:24px;opacity:0.15;position:absolute"></i><p style="font-size:10px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden;position:relative">${esc(p.prompt.substring(0,250))}</p></div>`}
+        <div class="card-foot">
+            <span class="card-src">${p.src||'Built-in'}</span>
+            <button onclick="event.stopPropagation();toggleSave(findP('${p.id}'))" class="card-save ${sv?'saved':''}" style="color:${sv?'var(--accent3)':'var(--muted)'}" aria-label="${sv?'Unsave':'Save'}"><i class="fas fa-bookmark"></i></button>
+        </div>
+    </div>`;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function go(view) {
+    S.view = view;
+    document.querySelectorAll('.bnav-item').forEach(el => el.classList.toggle('act', el.dataset.v === view));
+    render();
+    document.getElementById('mainContent').scrollTop = 0;
+}
+
+function doSearch() {
+    const inp = document.getElementById('searchIn');
+    S.q = inp ? inp.value.trim() : S.q;
+    render();
+}
+
+// ============================================================
+// AMBIENT ORBS
+// ============================================================
+function makeOrbs() {
+    const c = document.createElement('div');
+    c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden';
+    document.body.insertBefore(c, document.body.firstChild);
+    const cols = ['rgba(6,214,160,0.03)','rgba(124,58,237,0.03)','rgba(6,182,212,0.025)'];
+    for(let i=0;i<3;i++){
+        const o=document.createElement('div');
+        const sz=200+Math.random()*250;
+        o.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:${cols[i]};filter:blur(70px);left:${Math.random()*100}%;top:${Math.random()*100}%;animation:float ${5+Math.random()*4}s ease-in-out infinite;animation-delay:${i*1.5}s`;
+        c.appendChild(o);
     }
+}
 
-    // Hide scrollbar for chip containers
-    const style = document.createElement('style');
-    style.textContent = `.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`;
-    document.head.appendChild(style);
-
-    // Start the app
-    init();
-    </script>
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('saveDot').style.display = S.saved.length ? 'block' : 'none';
+makeOrbs();
+render(); // Show built-in immediately
+loadAllSources(); // Then fetch from all APIs
+</script>
 </body>
 </html>
